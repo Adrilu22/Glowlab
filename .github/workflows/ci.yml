@@ -1,0 +1,36 @@
+name: CI — Build and Test
+
+on:
+  push:
+    branches: [ main, production, development ]
+  pull_request:
+    branches: [ main, production, development ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 21 (Backend)
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Compilar Backend con Maven
+        run: |
+          cd backend
+          ./mvnw clean compile
+        # Este paso asegura que el código de Spring Boot no tenga errores de sintaxis 
+
+      - name: Verificar Integridad del Frontend
+        run: |
+          echo "Verificando archivos del frontend..."
+          test -f frontend/index.html && echo "✅ index.html encontrado"
+          # Verifica que el nuevo diseño de GlowLab esté en la carpeta correcta 
+
+      - name: Notificación de Éxito
+        run: echo "✅ La compilación y las pruebas básicas pasaron con éxito en $(date)"
