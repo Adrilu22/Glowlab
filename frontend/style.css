@@ -1,0 +1,181 @@
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to bottom, #ffe4ec, #fff);
+  display: flex;
+  justify-content: center;
+  margin: 0;
+}
+
+/* APP */
+.app {
+  width: 100%;
+  max-width: 430px;
+  background: #ffffff;
+  min-height: 100vh;
+  border-radius: 25px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+/* HEADER */
+.header {
+  text-align: center;
+  padding: 20px;
+}
+
+.logo {
+  width: 180px;
+  display: block;
+  margin: 0 auto 10px;
+}
+
+.header h1 {
+  font-size: 22px;
+}
+
+/* FORM */
+.formulario {
+  margin: 15px;
+  padding: 20px;
+  border-radius: 20px;
+  background: #fff0f5;
+}
+
+.formulario select {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  margin-top: 10px;
+  border: 1px solid #ddd;
+}
+
+/* BOTONES GENERALES */
+button {
+  width: 100%;
+  margin-top: 15px;
+  background: #ff758f;
+  border: none;
+  padding: 12px;
+  color: white;
+  border-radius: 30px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  background: #ff4d6d;
+}
+
+/* TITULOS */
+.titulo {
+  margin-left: 15px;
+  color: #444;
+}
+
+/* CONTENEDORES */
+.contenedor {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 10px;
+  align-items: stretch;
+}
+
+/* CARDS PRODUCTOS */
+.card {
+  flex: 0 0 170px;
+  height: 280px;
+  background: white;
+  border-radius: 18px;
+  padding: 10px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* IMAGEN */
+.card img {
+  width: 100%;
+  height: 110px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+/* TITULO */
+.card h4 {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+}
+
+/* PRECIO */
+.precio {
+  color: #ff4d6d;
+  font-weight: bold;
+  margin: 5px 0;
+}
+
+/* BOTONES DENTRO DE CARD */
+.card button {
+  margin-top: 5px;
+  font-size: 13px;
+  padding: 8px;
+  border-radius: 15px;
+}
+
+/* SEGUNDO BOTÓN (ej: ver categoría) */
+.card button + button {
+  background: #ffc0cb;
+  color: #333;
+}
+
+/* 🔥 CARRITO ARREGLADO */
+#carrito {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+}
+
+/* 🔥 CARDS DEL CARRITO (IGUAL ESTILO) */
+#carrito .card {
+  width: 100%;
+  height: auto;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 15px;
+}
+
+/* TEXTO CARRITO */
+#carrito .card h4 {
+  margin: 5px 0;
+}
+
+/* PRECIO CARRITO */
+#carrito .precio {
+  margin-bottom: 10px;
+}
+
+/* BOTÓN ELIMINAR */
+#carrito button {
+  width: auto;
+  padding: 8px 15px;
+  border-radius: 20px;
+  margin-top: 10px;
+  background: #ff4d6d;
+}
+
+/* TOTAL */
+.total {
+  margin: 15px;
+  font-weight: bold;
+  font-size: 16px;
+}

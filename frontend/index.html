@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Skincare App</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- HEADER -->
+  <header class="header">
+    <img src="https://www.shutterstock.com/image-vector/young-woman-applying-makeup-front-260nw-2659951161.jpg" class="logo">
+    <h1>RUTINA DE SKINCARE</h1>
+  </header>
+
+  <!-- FORMULARIO -->
+  <section class="formulario">
+    <h3>Descubre tu rutina</h3>
+
+    <!-- ✅ TIPO DE PIEL (FIJO - NO BACKEND) -->
+    <select id="tipoPiel">
+      <option value="">Selecciona tipo de piel</option>
+      <option value="grasa">Grasa</option>
+      <option value="seca">Seca</option>
+      <option value="mixta">Mixta</option>
+    </select>
+
+    <!-- PROBLEMA -->
+    <select id="problema">
+      <option value="">Problema principal</option>
+      <option value="acne">Acné</option>
+      <option value="manchas">Manchas</option>
+      <option value="hidratacion">Hidratación</option>
+      <option value="poros">Poros</option>
+    </select>
+
+    <button onclick="generarRutina()">Generar rutina</button>
+  </section>
+
+  <!-- RUTINA -->
+  <h3 class="titulo">Rutina recomendada</h3>
+  <div id="rutina" class="contenedor"></div>
+
+  <!-- PRODUCTOS -->
+  <h3 class="titulo">Explorar productos</h3>
+  <div id="productos" class="contenedor"></div>
+
+  <!-- CARRITO -->
+  <h3 class="titulo">Carrito</h3>
+  <div id="carrito" class="contenedor"></div>
+
+  <div class="total">
+    Total: <span id="total">$0</span>
+  </div>
+
+  <button class="btn-finalizar" onclick="finalizarCompra()">Finalizar compra</button>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
