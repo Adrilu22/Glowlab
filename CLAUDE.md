@@ -207,11 +207,7 @@ Nunca un solo `git add .` para toda la historia.
 ### Base de datos
 - **PostgreSQL 15** en Cloud SQL
 - Conexión via **Cloud SQL Socket Factory** (no TCP directo)
-<<<<<<< HEAD
-- Tablas principales: `categoria`, `producto`
-=======
-- Tablas principales: `categoria`, `producto`, `compra`, `detalle_compra`
->>>>>>> a09570d (docs: adaptar CLAUDE.md al proyecto GlowLab)
+- Tablas principales: `categorias`, `productos`, `compra`, `detalle_compra`
 - Variables de entorno: `DB_USER`, `DB_PASSWORD`, `INSTANCE_CONNECTION_NAME`, `PORT`
 
 ### Endpoints que debo implementar
