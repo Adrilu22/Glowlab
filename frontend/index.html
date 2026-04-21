@@ -777,6 +777,26 @@
   .delay-1 { animation-delay: 0.1s; opacity: 0; }
   .delay-2 { animation-delay: 0.2s; opacity: 0; }
   .delay-3 { animation-delay: 0.3s; opacity: 0; }
+
+  /* CONFIRM DELETE MODAL */
+  .modal-confirm-box { max-width: 380px; text-align: center; }
+  .confirm-icon { font-size: 36px; margin-bottom: 12px; }
+  .modal-confirm-box h3 { font-size: 22px; margin-bottom: 4px; }
+  .modal-confirm-box .modal-sub { margin-bottom: 0; }
+  .modal-confirm-box .modal-actions { justify-content: center; gap: 12px; }
+  .btn-delete {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 10px;
+    background: var(--rose-dark);
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.15s;
+  }
+  .btn-delete:hover { background: #7A3A35; }
 </style>
 </head>
 <body>
@@ -1063,6 +1083,19 @@
   </div>
 </div>
 
+<!-- MODAL CONFIRM DELETE -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal modal-confirm-box">
+    <div class="confirm-icon">🗑️</div>
+    <h3 id="confirm-title">¿Eliminar este elemento?</h3>
+    <div class="modal-sub" id="confirm-msg">Esta acción no se puede deshacer.</div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-confirm')">Cancelar</button>
+      <button class="btn-delete" id="confirm-action-btn">Eliminar</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
@@ -1301,11 +1334,17 @@ function saveProduct() {
 }
 
 function deleteProduct(id) {
-  if (!confirm('¿Eliminar este producto?')) return;
-  products = products.filter(p => p.id !== id);
-  renderProducts();
-  updateStats();
-  showToast('Producto eliminado');
+  const p = products.find(x => x.id === id);
+  showConfirmDelete(
+    `¿Eliminar "${p.name}"?`,
+    'El producto se eliminará del catálogo de forma permanente.',
+    () => {
+      products = products.filter(x => x.id !== id);
+      renderProducts();
+      updateStats();
+      showToast('Producto eliminado');
+    }
+  );
 }
 
 // ── CATEGORIES ──
@@ -1360,12 +1399,18 @@ function saveCategory() {
 }
 
 function deleteCat(id) {
-  if (!confirm('¿Eliminar esta categoría?')) return;
-  categories = categories.filter(c => c.id !== id);
-  renderCategories();
-  renderCatFilters();
-  updateStats();
-  showToast('Categoría eliminada');
+  const c = categories.find(x => x.id === id);
+  showConfirmDelete(
+    `¿Eliminar "${c.name}"?`,
+    'La categoría y su asociación con los productos se eliminará de forma permanente.',
+    () => {
+      categories = categories.filter(x => x.id !== id);
+      renderCategories();
+      renderCatFilters();
+      updateStats();
+      showToast('Categoría eliminada');
+    }
+  );
 }
 
 // ── ROUTINE ──
@@ -1445,6 +1490,14 @@ function renderSavedRoutines() {
 // ── MODAL & TOAST ──
 function closeModal(id) {
   document.getElementById(id).classList.remove('open');
+}
+
+function showConfirmDelete(title, msg, onConfirm) {
+  document.getElementById('confirm-title').textContent = title;
+  document.getElementById('confirm-msg').textContent   = msg;
+  const btn = document.getElementById('confirm-action-btn');
+  btn.onclick = () => { closeModal('modal-confirm'); onConfirm(); };
+  document.getElementById('modal-confirm').classList.add('open');
 }
 document.addEventListener('click', e => {
   if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('open');
