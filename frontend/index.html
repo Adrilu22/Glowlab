@@ -1,64 +1,1462 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Skincare App</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GlowLab — Skincare Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #FAF6EF;
+    --warm-white: #FFFDF9;
+    --blush: #EEC0AC;
+    --blush-dark: #CC9272;
+    --rose: #CB6E66;
+    --rose-dark: #8F4840;
+    --sage: #6B9E88;
+    --sage-light: #BDD6CA;
+    --sage-dark: #3A6952;
+    --charcoal: #28211E;
+    --mid: #6A5C56;
+    --light: #AFA39C;
+    --border: rgba(40,33,30,0.12);
+    --border-hover: rgba(40,33,30,0.28);
+    --shadow: 0 2px 20px rgba(40,33,30,0.09);
+    --shadow-md: 0 8px 40px rgba(40,33,30,0.14);
+    --font-display: 'Cormorant Garamond', serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--cream);
+    color: var(--charcoal);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* ── AUTH OVERLAY ── */
+  #auth-overlay {
+    position: fixed; inset: 0; z-index: 1000;
+    background: var(--cream);
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity 0.5s, visibility 0.5s;
+  }
+  #auth-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+  .auth-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 900px;
+    min-height: 580px;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border);
+  }
+
+  .auth-panel-left {
+    background: linear-gradient(160deg, #D4786E 0%, #924844 50%, #3A6952 100%);
+    display: flex; flex-direction: column;
+    justify-content: flex-end; align-items: flex-start;
+    padding: 48px;
+    position: relative; overflow: hidden;
+  }
+  .auth-panel-left::before {
+    content: '';
+    position: absolute; top: -60px; right: -60px;
+    width: 260px; height: 260px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+  }
+  .auth-panel-left::after {
+    content: '';
+    position: absolute; bottom: 80px; left: -40px;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+  }
+  .auth-panel-left h1 {
+    font-family: var(--font-display);
+    font-size: 56px;
+    font-weight: 300;
+    color: #FFF;
+    line-height: 1.05;
+    letter-spacing: -1px;
+    position: relative; z-index: 1;
+  }
+  .auth-panel-left p {
+    color: rgba(255,255,255,0.7);
+    font-size: 14px;
+    margin-top: 12px;
+    position: relative; z-index: 1;
+    font-weight: 300;
+    letter-spacing: 0.3px;
+  }
+  .auth-dots {
+    display: flex; gap: 6px; margin-top: 32px;
+    position: relative; z-index: 1;
+  }
+  .auth-dots span {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+  }
+  .auth-dots span.active { background: #fff; width: 20px; border-radius: 3px; }
+
+  .auth-panel-right {
+    background: var(--warm-white);
+    padding: 56px 48px;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .auth-tabs {
+    display: flex; gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 36px;
+    width: fit-content;
+  }
+  .auth-tab {
+    padding: 9px 24px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 400;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    color: var(--mid);
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .auth-tab.active {
+    background: var(--charcoal);
+    color: #fff;
+  }
+
+  .auth-subtitle {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 300;
+    color: var(--charcoal);
+    margin-bottom: 6px;
+    line-height: 1.2;
+  }
+  .auth-hint { font-size: 13px; color: var(--light); margin-bottom: 28px; font-weight: 300; }
+
+  .form-field { margin-bottom: 16px; }
+  .form-field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--mid);
+    margin-bottom: 6px;
+  }
+  .form-field input, .form-field select {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--charcoal);
+    background: var(--cream);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-field input:focus, .form-field select:focus { border-color: var(--rose); }
+
+  .role-selector {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    margin-bottom: 16px;
+  }
+  .role-btn {
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    background: var(--cream);
+    text-align: left;
+    transition: all 0.2s;
+    font-family: var(--font-body);
+  }
+  .role-btn.selected { border-color: var(--rose); background: rgba(196,114,106,0.06); }
+  .role-btn .role-icon { font-size: 18px; margin-bottom: 4px; }
+  .role-btn .role-name { font-size: 13px; font-weight: 500; color: var(--charcoal); }
+  .role-btn .role-desc { font-size: 11px; color: var(--light); margin-top: 2px; }
+
+  .btn-primary {
+    width: 100%;
+    padding: 13px;
+    background: var(--charcoal);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+    transition: background 0.2s, transform 0.1s;
+    margin-top: 8px;
+  }
+  .btn-primary:hover { background: var(--rose-dark); }
+  .btn-primary:active { transform: scale(0.99); }
+
+  .demo-creds {
+    margin-top: 20px;
+    padding: 12px 14px;
+    background: rgba(122,158,138,0.08);
+    border: 1px solid rgba(122,158,138,0.2);
+    border-radius: 10px;
+    font-size: 12px;
+    color: var(--sage-dark);
+  }
+  .demo-creds strong { display: block; margin-bottom: 4px; font-size: 11px; letter-spacing: 0.8px; text-transform: uppercase; }
+
+  /* ── MAIN APP ── */
+  #app { display: none; }
+  #app.visible { display: flex; flex-direction: column; min-height: 100vh; }
+
+  /* NAVBAR */
+  .navbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(250,247,242,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 40px;
+    display: flex; align-items: center; gap: 0;
+    height: 64px;
+  }
+  .nav-brand {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 400;
+    color: var(--charcoal);
+    letter-spacing: -0.5px;
+    margin-right: 40px;
+    flex-shrink: 0;
+  }
+  .nav-brand em { font-style: italic; color: var(--rose); }
+
+  .nav-links {
+    display: flex; gap: 2px; flex: 1;
+  }
+  .nav-link {
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--mid);
+    text-decoration: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none; background: none;
+    font-family: var(--font-body);
+    letter-spacing: 0.1px;
+  }
+  .nav-link:hover { background: rgba(44,36,32,0.05); color: var(--charcoal); }
+  .nav-link.active { background: var(--charcoal); color: #fff; }
+
+  .nav-right {
+    display: flex; align-items: center; gap: 12px;
+    margin-left: auto;
+  }
+  .user-badge {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 12px 6px 6px;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .user-badge:hover { border-color: var(--border-hover); }
+  .user-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--rose), var(--sage));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 500; color: #fff;
+    flex-shrink: 0;
+  }
+  .user-name { font-size: 13px; color: var(--charcoal); font-weight: 400; }
+  .user-role {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+  .user-role.admin { background: rgba(196,114,106,0.12); color: var(--rose-dark); }
+  .user-role.user { background: rgba(122,158,138,0.12); color: var(--sage-dark); }
+
+  .btn-logout {
+    padding: 7px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: transparent;
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--mid);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-logout:hover { border-color: var(--rose); color: var(--rose); }
+
+  /* SECTIONS */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* HERO / DASHBOARD */
+  .hero {
+    padding: 80px 40px 60px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--rose);
+    margin-bottom: 20px;
+  }
+  .hero-tag::before {
+    content: ''; width: 20px; height: 1px; background: var(--rose);
+  }
+  .hero h2 {
+    font-family: var(--font-display);
+    font-size: clamp(44px, 6vw, 72px);
+    font-weight: 300;
+    line-height: 1.05;
+    letter-spacing: -1.5px;
+    color: var(--charcoal);
+    max-width: 700px;
+    margin-bottom: 24px;
+  }
+  .hero h2 em { font-style: italic; color: var(--rose); }
+  .hero p { font-size: 16px; color: var(--mid); font-weight: 300; max-width: 480px; line-height: 1.7; }
+
+  /* STATS ROW */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    padding: 0 40px 40px;
+    max-width: 1100px; margin: 0 auto;
+  }
+  .stat-card {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .stat-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+  .stat-num {
+    font-family: var(--font-display);
+    font-size: 42px;
+    font-weight: 300;
+    color: var(--charcoal);
+    line-height: 1;
+    letter-spacing: -1px;
+  }
+  .stat-label { font-size: 12px; color: var(--light); font-weight: 400; margin-top: 4px; letter-spacing: 0.5px; }
+
+  /* CONTENT GRID */
+  .content-area {
+    padding: 0 40px 80px;
+    max-width: 1100px; margin: 0 auto;
+  }
+
+  .section-header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 28px; gap: 16px;
+  }
+  .section-title {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 300;
+    color: var(--charcoal);
+    letter-spacing: -0.5px;
+  }
+  .section-title em { font-style: italic; }
+
+  /* ADMIN NOTICE */
+  .admin-notice {
+    display: flex; align-items: center; gap: 12px;
+    background: rgba(196,114,106,0.06);
+    border: 1px solid rgba(196,114,106,0.2);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 24px;
+    font-size: 13px;
+    color: var(--rose-dark);
+  }
+  .admin-notice .icon { font-size: 16px; flex-shrink: 0; }
+
+  /* PRODUCT GRID */
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+  }
+  .product-card {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: box-shadow 0.2s, transform 0.2s;
+    display: flex; flex-direction: column;
+  }
+  .product-card:hover { box-shadow: var(--shadow-md); transform: translateY(-3px); }
+
+  .product-img {
+    height: 180px;
+    background: linear-gradient(135deg, var(--sage-light) 0%, var(--blush) 100%);
+    display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+  }
+  .product-img::after {
+    content: attr(data-cat);
+    position: absolute; top: 12px; left: 12px;
+    font-size: 10px; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 1px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.85);
+    color: var(--mid);
+    backdrop-filter: blur(4px);
+  }
+  .product-emoji { font-size: 48px; }
+
+  .product-body { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+  .product-name {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--charcoal);
+    margin-bottom: 4px;
+    line-height: 1.2;
+  }
+  .product-brand { font-size: 12px; color: var(--light); margin-bottom: 10px; font-weight: 300; }
+  .product-desc { font-size: 13px; color: var(--mid); line-height: 1.5; flex: 1; font-weight: 300; }
+  .product-skin-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+  .skin-tag {
+    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(122,158,138,0.1);
+    color: var(--sage-dark);
+    font-weight: 400;
+    border: 1px solid rgba(122,158,138,0.2);
+  }
+  .product-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px;
+    border-top: 1px solid var(--border);
+  }
+  .product-price {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--charcoal);
+  }
+  .product-actions { display: flex; gap: 8px; }
+  .btn-sm {
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: var(--font-body);
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--mid);
+  }
+  .btn-sm:hover { border-color: var(--border-hover); color: var(--charcoal); }
+  .btn-sm.danger { color: var(--rose); border-color: rgba(196,114,106,0.3); }
+  .btn-sm.danger:hover { background: rgba(196,114,106,0.06); }
+  .btn-sm.primary { background: var(--charcoal); color: #fff; border-color: var(--charcoal); }
+  .btn-sm.primary:hover { background: var(--rose-dark); border-color: var(--rose-dark); }
+
+  /* FILTERS */
+  .filters {
+    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+  .filter-chip {
+    padding: 7px 16px;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: transparent;
+    color: var(--mid);
+    font-family: var(--font-body);
+  }
+  .filter-chip:hover { border-color: var(--border-hover); color: var(--charcoal); }
+  .filter-chip.active { background: var(--charcoal); color: #fff; border-color: var(--charcoal); }
+
+  /* ROUTINE BUILDER */
+  .routine-builder {
+    display: grid; grid-template-columns: 1fr 360px; gap: 32px;
+    align-items: start;
+  }
+  .skin-wizard {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+  }
+  .wizard-title {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 300;
+    color: var(--charcoal);
+    margin-bottom: 6px;
+    line-height: 1.2;
+  }
+  .wizard-subtitle { font-size: 13px; color: var(--light); margin-bottom: 28px; font-weight: 300; }
+
+  .skin-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .skin-opt {
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: var(--font-body);
+    background: var(--cream);
+    text-align: left;
+  }
+  .skin-opt:hover { border-color: var(--border-hover); }
+  .skin-opt.selected { border-color: var(--sage); background: rgba(122,158,138,0.06); }
+  .skin-opt-icon { font-size: 20px; margin-bottom: 6px; display: block; }
+  .skin-opt-name { font-size: 13px; font-weight: 500; color: var(--charcoal); }
+  .skin-opt-desc { font-size: 11px; color: var(--light); margin-top: 2px; font-weight: 300; }
+
+  .concern-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+  .concern-chip {
+    padding: 7px 14px;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: transparent;
+    color: var(--mid);
+    font-family: var(--font-body);
+  }
+  .concern-chip.selected { background: var(--sage); color: #fff; border-color: var(--sage); }
+
+  .routine-result {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+    position: sticky; top: 84px;
+  }
+  .routine-result h3 {
+    font-family: var(--font-display);
+    font-size: 22px; font-weight: 300;
+    color: var(--charcoal);
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .routine-step {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .routine-step:last-child { border-bottom: none; }
+  .step-num {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--charcoal);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 500;
+    flex-shrink: 0;
+  }
+  .step-info { flex: 1; }
+  .step-name { font-size: 14px; font-weight: 500; color: var(--charcoal); }
+  .step-product { font-size: 12px; color: var(--light); margin-top: 2px; font-weight: 300; }
+
+  .empty-state {
+    text-align: center; padding: 48px 24px;
+    color: var(--light);
+  }
+  .empty-state .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.5; }
+  .empty-state p { font-size: 13px; font-weight: 300; }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 500;
+    background: rgba(44,36,32,0.4);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; visibility: hidden;
+    transition: all 0.25s;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.open { opacity: 1; visibility: visible; }
+  .modal {
+    background: var(--warm-white);
+    border-radius: 20px;
+    padding: 36px;
+    width: 480px;
+    max-width: 90vw;
+    box-shadow: var(--shadow-md);
+    transform: translateY(12px);
+    transition: transform 0.25s;
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal h3 {
+    font-family: var(--font-display);
+    font-size: 26px; font-weight: 300;
+    color: var(--charcoal);
+    margin-bottom: 6px;
+  }
+  .modal-sub { font-size: 13px; color: var(--light); margin-bottom: 24px; font-weight: 300; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 24px; justify-content: flex-end; }
+  .btn-cancel {
+    padding: 10px 20px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: transparent;
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--mid);
+    cursor: pointer;
+  }
+  .btn-cancel:hover { border-color: var(--border-hover); color: var(--charcoal); }
+  .btn-save {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 10px;
+    background: var(--charcoal);
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  .btn-save:hover { background: var(--rose-dark); }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--charcoal);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 13px;
+    z-index: 2000;
+    transform: translateY(60px); opacity: 0;
+    transition: all 0.3s;
+    box-shadow: var(--shadow-md);
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { background: var(--sage-dark); }
+  .toast.error { background: var(--rose-dark); }
+
+  /* CATEGORIES PAGE */
+  .categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+  }
+  .category-card {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    transition: box-shadow 0.2s, transform 0.2s;
+    display: flex; flex-direction: column;
+  }
+  .category-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+  .cat-icon { font-size: 28px; margin-bottom: 12px; }
+  .cat-name {
+    font-family: var(--font-display);
+    font-size: 18px; font-weight: 400;
+    color: var(--charcoal); margin-bottom: 4px;
+  }
+  .cat-count { font-size: 12px; color: var(--light); font-weight: 300; flex: 1; margin-bottom: 14px; }
+  .cat-actions { display: flex; gap: 8px; margin-top: auto; }
+
+  /* ADD BTN */
+  .btn-add {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 20px;
+    background: var(--charcoal);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-add:hover { background: var(--rose-dark); }
+  .btn-add::before { content: '+'; font-size: 18px; line-height: 1; }
+
+  /* SEARCH */
+  .search-bar {
+    display: flex; align-items: center; gap: 10px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0 14px;
+    background: var(--warm-white);
+    transition: border-color 0.2s;
+  }
+  .search-bar:focus-within { border-color: var(--rose); }
+  .search-bar input {
+    border: none; background: transparent;
+    font-family: var(--font-body); font-size: 13px;
+    color: var(--charcoal); outline: none;
+    padding: 10px 0; width: 220px;
+  }
+  .search-bar input::placeholder { color: var(--light); }
+  .search-icon { color: var(--light); font-size: 14px; }
+
+  /* ROUTINE CARD */
+  .routine-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .routine-card {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    transition: box-shadow 0.2s;
+  }
+  .routine-card:hover { box-shadow: var(--shadow); }
+  .routine-card-name {
+    font-family: var(--font-display);
+    font-size: 20px; font-weight: 400;
+    color: var(--charcoal); margin-bottom: 4px;
+  }
+  .routine-card-meta { font-size: 12px; color: var(--light); margin-bottom: 14px; font-weight: 300; }
+  .routine-card-steps { font-size: 13px; color: var(--mid); line-height: 1.8; }
+  .step-dot::before { content: '·'; margin-right: 6px; color: var(--blush-dark); }
+
+  /* PAGE FOOTER */
+  .page-footer {
+    border-top: 1px solid var(--border);
+    padding: 28px 40px;
+    display: flex; align-items: center; justify-content: space-between;
+    color: var(--light);
+    font-size: 12px;
+    font-weight: 300;
+    margin-top: auto;
+  }
+  .footer-brand {
+    font-family: var(--font-display);
+    font-size: 16px; font-weight: 300;
+    color: var(--mid);
+  }
+  .footer-brand em { font-style: italic; color: var(--rose); }
+
+  @media (max-width: 700px) {
+    .auth-split { grid-template-columns: 1fr; width: 90vw; }
+    .auth-panel-left { display: none; }
+    .routine-builder { grid-template-columns: 1fr; }
+    .navbar { padding: 0 16px; }
+    .hero, .content-area, .stats-row { padding-left: 16px; padding-right: 16px; }
+  }
+
+  /* Animations */
+  @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+  .fade-up { animation: fadeUp 0.5s ease forwards; }
+  .delay-1 { animation-delay: 0.1s; opacity: 0; }
+  .delay-2 { animation-delay: 0.2s; opacity: 0; }
+  .delay-3 { animation-delay: 0.3s; opacity: 0; }
+</style>
 </head>
 <body>
 
-<div class="app">
+<!-- AUTH OVERLAY -->
+<div id="auth-overlay">
+  <div class="auth-split">
+    <div class="auth-panel-left">
+      <h1>Glow<br><em>Lab</em></h1>
+      <p>Skincare Intelligence Platform</p>
+      <div class="auth-dots">
+        <span class="active"></span><span></span><span></span>
+      </div>
+    </div>
+    <div class="auth-panel-right">
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchAuthTab('login')">Iniciar sesión</button>
+        <button class="auth-tab" onclick="switchAuthTab('register')">Registrarse</button>
+      </div>
 
-  <!-- HEADER -->
-  <header class="header">
-    <img src="https://www.shutterstock.com/image-vector/young-woman-applying-makeup-front-260nw-2659951161.jpg" class="logo">
-    <h1>RUTINA DE SKINCARE</h1>
-  </header>
+      <!-- LOGIN FORM -->
+      <div id="login-form">
+        <div class="auth-subtitle">Bienvenida de vuelta</div>
+        <div class="auth-hint">Ingresa tus credenciales para continuar</div>
+        <div class="form-field">
+          <label>Correo electrónico</label>
+          <input type="email" id="login-email" placeholder="tu@correo.com" value="admin@glowlab.co">
+        </div>
+        <div class="form-field">
+          <label>Contraseña</label>
+          <input type="password" id="login-password" placeholder="••••••••" value="admin123">
+        </div>
+        <button class="btn-primary" onclick="doLogin()">Ingresar a GlowLab</button>
+        <div class="demo-creds">
+          <strong>Cuentas de demostración</strong>
+          Admin: admin@glowlab.co / admin123<br>
+          Usuario: user@glowlab.co / user123
+        </div>
+      </div>
 
-  <!-- FORMULARIO -->
-  <section class="formulario">
-    <h3>Descubre tu rutina</h3>
-
-    <!-- ✅ TIPO DE PIEL (FIJO - NO BACKEND) -->
-    <select id="tipoPiel">
-      <option value="">Selecciona tipo de piel</option>
-      <option value="grasa">Grasa</option>
-      <option value="seca">Seca</option>
-      <option value="mixta">Mixta</option>
-    </select>
-
-    <!-- PROBLEMA -->
-    <select id="problema">
-      <option value="">Problema principal</option>
-      <option value="acne">Acné</option>
-      <option value="manchas">Manchas</option>
-      <option value="hidratacion">Hidratación</option>
-      <option value="poros">Poros</option>
-    </select>
-
-    <button onclick="generarRutina()">Generar rutina</button>
-  </section>
-
-  <!-- RUTINA -->
-  <h3 class="titulo">Rutina recomendada</h3>
-  <div id="rutina" class="contenedor"></div>
-
-  <!-- PRODUCTOS -->
-  <h3 class="titulo">Explorar productos</h3>
-  <div id="productos" class="contenedor"></div>
-
-  <!-- CARRITO -->
-  <h3 class="titulo">Carrito</h3>
-  <div id="carrito" class="contenedor"></div>
-
-  <div class="total">
-    Total: <span id="total">$0</span>
+      <!-- REGISTER FORM -->
+      <div id="register-form" style="display:none;">
+        <div class="auth-subtitle">Crear cuenta</div>
+        <div class="auth-hint">Únete a nuestra comunidad skincare</div>
+        <div class="form-field">
+          <label>Nombre completo</label>
+          <input type="text" id="reg-name" placeholder="Tu nombre">
+        </div>
+        <div class="form-field">
+          <label>Correo electrónico</label>
+          <input type="email" id="reg-email" placeholder="tu@correo.com">
+        </div>
+        <div class="form-field">
+          <label>Contraseña</label>
+          <input type="password" id="reg-password" placeholder="Mínimo 6 caracteres">
+        </div>
+        <div style="font-size:11px; font-weight:500; letter-spacing:1.2px; text-transform:uppercase; color:var(--mid); margin-bottom:8px;">Tipo de cuenta</div>
+        <div class="role-selector">
+          <button class="role-btn selected" id="role-user" onclick="selectRole('user')">
+            <span class="role-icon">🌿</span>
+            <div class="role-name">Usuario</div>
+            <div class="role-desc">Gestiona tu rutina</div>
+          </button>
+          <button class="role-btn" id="role-admin" onclick="selectRole('admin')">
+            <span class="role-icon">⚙️</span>
+            <div class="role-name">Administrador</div>
+            <div class="role-desc">Gestiona catálogo</div>
+          </button>
+        </div>
+        <button class="btn-primary" onclick="doRegister()">Crear cuenta</button>
+      </div>
+    </div>
   </div>
-
-  <button class="btn-finalizar" onclick="finalizarCompra()">Finalizar compra</button>
-
 </div>
 
-<script src="script.js"></script>
+<!-- MAIN APP -->
+<div id="app">
+  <nav class="navbar">
+    <div class="nav-brand">Glow<em>Lab</em></div>
+    <div class="nav-links" id="nav-links">
+      <!-- injected by JS based on role -->
+    </div>
+    <div class="nav-right">
+      <div class="user-badge" id="user-badge">
+        <div class="user-avatar" id="nav-avatar">GL</div>
+        <span class="user-name" id="nav-username">Usuario</span>
+        <span class="user-role" id="nav-role-badge">user</span>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">Salir</button>
+    </div>
+  </nav>
+
+  <!-- SECTION: Dashboard -->
+  <section class="section active" id="section-dashboard">
+    <div class="hero fade-up">
+      <div class="hero-tag">Tu plataforma skincare</div>
+      <h2>Ciencia al servicio<br>de tu <em>piel</em></h2>
+      <p id="hero-desc">Descubre productos, construye rutinas personalizadas y alcanza la piel que mereces.</p>
+    </div>
+    <div class="stats-row" id="stats-row">
+      <div class="stat-card fade-up delay-1">
+        <div class="stat-num" id="stat-productos">—</div>
+        <div class="stat-label">Productos en catálogo</div>
+      </div>
+      <div class="stat-card fade-up delay-2">
+        <div class="stat-num" id="stat-categorias">—</div>
+        <div class="stat-label">Categorías disponibles</div>
+      </div>
+      <div class="stat-card fade-up delay-3">
+        <div class="stat-num" id="stat-rutinas">—</div>
+        <div class="stat-label">Rutinas guardadas</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION: Productos -->
+  <section class="section" id="section-productos">
+    <div class="content-area">
+      <div class="section-header">
+        <div class="section-title"><em>Productos</em> disponibles</div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <div class="search-bar">
+            <span class="search-icon">⌕</span>
+            <input type="text" placeholder="Buscar producto..." id="search-product" oninput="renderProducts()">
+          </div>
+          <button class="btn-add" id="btn-add-product" onclick="openProductModal()" style="display:none;">Agregar producto</button>
+        </div>
+      </div>
+      <div class="filters" id="product-filters"></div>
+      <div class="product-grid" id="product-grid"></div>
+    </div>
+  </section>
+
+  <!-- SECTION: Categorías (Admin only) -->
+  <section class="section" id="section-categorias">
+    <div class="content-area">
+      <div class="section-header">
+        <div class="section-title"><em>Categorías</em> del catálogo</div>
+        <button class="btn-add" onclick="openCatModal()">Agregar categoría</button>
+      </div>
+      <div class="admin-notice">
+        <span class="icon">🛡️</span>
+        Área de administración — Solo administradores pueden crear, editar y eliminar categorías.
+      </div>
+      <div class="categories-grid" id="categories-grid"></div>
+    </div>
+  </section>
+
+  <!-- SECTION: Mi Rutina -->
+  <section class="section" id="section-rutina">
+    <div class="content-area">
+      <div class="section-header">
+        <div class="section-title">Mi <em>rutina</em> personalizada</div>
+      </div>
+      <div class="routine-builder">
+        <div class="skin-wizard">
+          <div class="wizard-title">Configura tu rutina</div>
+          <div class="wizard-subtitle">Selecciona tu tipo de piel y preocupaciones</div>
+
+          <div style="font-size:11px;font-weight:500;letter-spacing:1.2px;text-transform:uppercase;color:var(--mid);margin-bottom:12px;">Tipo de piel</div>
+          <div class="skin-options" id="skin-options">
+            <button class="skin-opt" data-type="grasa" onclick="selectSkin(this)">
+              <span class="skin-opt-icon">💧</span>
+              <div class="skin-opt-name">Grasa</div>
+              <div class="skin-opt-desc">Brillos y poros dilatados</div>
+            </button>
+            <button class="skin-opt" data-type="seca" onclick="selectSkin(this)">
+              <span class="skin-opt-icon">🌵</span>
+              <div class="skin-opt-name">Seca</div>
+              <div class="skin-opt-desc">Tirantez y descamación</div>
+            </button>
+            <button class="skin-opt" data-type="mixta" onclick="selectSkin(this)">
+              <span class="skin-opt-icon">⚖️</span>
+              <div class="skin-opt-name">Mixta</div>
+              <div class="skin-opt-desc">Zona T grasa, mejillas secas</div>
+            </button>
+            <button class="skin-opt" data-type="sensible" onclick="selectSkin(this)">
+              <span class="skin-opt-icon">🌸</span>
+              <div class="skin-opt-name">Sensible</div>
+              <div class="skin-opt-desc">Rojeces y reactividad</div>
+            </button>
+          </div>
+
+          <div style="font-size:11px;font-weight:500;letter-spacing:1.2px;text-transform:uppercase;color:var(--mid);margin-bottom:12px;">Preocupaciones</div>
+          <div class="concern-chips">
+            <button class="concern-chip" onclick="toggleConcern(this)" data-c="acne">Acné</button>
+            <button class="concern-chip" onclick="toggleConcern(this)" data-c="manchas">Manchas</button>
+            <button class="concern-chip" onclick="toggleConcern(this)" data-c="poros">Poros</button>
+            <button class="concern-chip" onclick="toggleConcern(this)" data-c="hidratacion">Hidratación</button>
+            <button class="concern-chip" onclick="toggleConcern(this)" data-c="antiaging">Anti-aging</button>
+            <button class="concern-chip" onclick="toggleConcern(this)" data-c="luminosidad">Luminosidad</button>
+          </div>
+
+          <button class="btn-primary" onclick="generateRoutine()">Generar mi rutina</button>
+        </div>
+
+        <div class="routine-result">
+          <h3>Rutina recomendada</h3>
+          <div id="routine-output">
+            <div class="empty-state">
+              <div class="empty-icon">🧴</div>
+              <p>Configura tu tipo de piel para obtener una rutina personalizada</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 40px;">
+        <div class="section-header">
+          <div class="section-title">Mis <em>rutinas</em> guardadas</div>
+        </div>
+        <div class="routine-cards" id="saved-routines"></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="page-footer">
+    <div class="footer-brand">Glow<em>Lab</em> — Skincare Intelligence</div>
+    <div>Los Libertadores · Desarrollo en la Nube · 2024</div>
+  </footer>
+</div>
+
+<!-- MODAL PRODUCT -->
+<div class="modal-overlay" id="modal-product">
+  <div class="modal">
+    <h3 id="modal-product-title">Nuevo producto</h3>
+    <div class="modal-sub">Completa la información del producto</div>
+    <input type="hidden" id="edit-product-id">
+    <div class="form-field">
+      <label>Nombre del producto</label>
+      <input type="text" id="product-name-input" placeholder="ej. Sérum de Vitamina C">
+    </div>
+    <div class="form-field">
+      <label>Marca</label>
+      <input type="text" id="product-brand-input" placeholder="ej. The Ordinary">
+    </div>
+    <div class="form-field">
+      <label>Categoría</label>
+      <select id="product-cat-input">
+        <option value="">Seleccionar...</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label>Precio (COP)</label>
+      <input type="number" id="product-price-input" placeholder="45000">
+    </div>
+    <div class="form-field">
+      <label>Descripción</label>
+      <input type="text" id="product-desc-input" placeholder="Breve descripción del producto">
+    </div>
+    <div class="form-field">
+      <label>Tipos de piel (separados por comas)</label>
+      <input type="text" id="product-skin-input" placeholder="grasa, mixta, sensible">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-product')">Cancelar</button>
+      <button class="btn-save" onclick="saveProduct()">Guardar producto</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CATEGORY -->
+<div class="modal-overlay" id="modal-category">
+  <div class="modal">
+    <h3 id="modal-cat-title">Nueva categoría</h3>
+    <div class="modal-sub">Define una nueva categoría de productos</div>
+    <input type="hidden" id="edit-cat-id">
+    <div class="form-field">
+      <label>Nombre de la categoría</label>
+      <input type="text" id="cat-name-input" placeholder="ej. Sérum">
+    </div>
+    <div class="form-field">
+      <label>Descripción</label>
+      <input type="text" id="cat-desc-input" placeholder="ej. Tratamientos concentrados">
+    </div>
+    <div class="form-field">
+      <label>Emoji representativo</label>
+      <input type="text" id="cat-icon-input" placeholder="ej. 🧴" maxlength="2">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-category')">Cancelar</button>
+      <button class="btn-save" onclick="saveCategory()">Guardar categoría</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATA STORE (simula API) ──
+const USERS = [
+  { id: 1, name: 'Adriana Carreño', email: 'admin@glowlab.co', password: 'admin123', role: 'admin', initials: 'AC' },
+  { id: 2, name: 'Sary Ariza', email: 'user@glowlab.co', password: 'user123', role: 'user', initials: 'SA' }
+];
+
+let categories = [
+  { id: 1, name: 'Limpiadores', desc: 'Limpieza diaria facial', icon: '🫧', count: 2 },
+  { id: 2, name: 'Sérum', desc: 'Tratamientos concentrados', icon: '💧', count: 3 },
+  { id: 3, name: 'Hidratante', desc: 'Cremas y lociones', icon: '🧴', count: 2 },
+  { id: 4, name: 'Protector Solar', desc: 'Protección UV diaria', icon: '☀️', count: 2 },
+  { id: 5, name: 'Tónico', desc: 'Equilibrio y preparación', icon: '✨', count: 2 },
+  { id: 6, name: 'Exfoliante', desc: 'Renovación celular', icon: '🌿', count: 1 },
+];
+
+let products = [
+  { id: 1, name: 'Gentle Foaming Cleanser', brand: 'CeraVe', catId: 1, price: 62000, desc: 'Limpiador suave con ceramidas para piel sensible y mixta', skins: ['sensible','mixta','seca'], emoji: '🫧' },
+  { id: 2, name: 'Salicylic Acid 2%', brand: 'The Ordinary', catId: 1, price: 28000, desc: 'Limpiador con BHA para piel grasa y con acné', skins: ['grasa','mixta'], emoji: '🧪' },
+  { id: 3, name: 'Sérum Vitamina C 10%', brand: 'Sesderma', catId: 2, price: 95000, desc: 'Ilumina manchas y unifica el tono de la piel', skins: ['grasa','seca','mixta','sensible'], emoji: '🍋' },
+  { id: 4, name: 'Hyaluronic Acid 2%+B5', brand: 'The Ordinary', catId: 2, price: 32000, desc: 'Hidratación profunda y relleno de líneas finas', skins: ['seca','mixta','sensible'], emoji: '💎' },
+  { id: 5, name: 'Niacinamide 10% + Zinc', brand: 'The Ordinary', catId: 2, price: 30000, desc: 'Reduce poros y controla el sebo', skins: ['grasa','mixta'], emoji: '⚗️' },
+  { id: 6, name: 'Moisturizing Cream', brand: 'CeraVe', catId: 3, price: 55000, desc: 'Hidratante reparadora con ceramidas y ácido hialurónico', skins: ['seca','sensible','mixta'], emoji: '🫙' },
+  { id: 7, name: 'Oil-Free SPF 50+', brand: 'Heliocare', catId: 4, price: 78000, desc: 'Protector solar sin aceites ideal para piel grasa', skins: ['grasa','mixta'], emoji: '☀️' },
+  { id: 8, name: 'Sunscreen SPF 30', brand: 'La Roche-Posay', catId: 4, price: 89000, desc: 'Protector mineral para piel sensible', skins: ['sensible','seca'], emoji: '🌞' },
+  { id: 9, name: 'Rose Water Toner', brand: 'Mario Badescu', catId: 5, price: 42000, desc: 'Tónico calmante con agua de rosas y aloe vera', skins: ['sensible','seca'], emoji: '🌹' },
+  { id: 10, name: 'BHA Liquid Exfoliant', brand: 'Paula\'s Choice', catId: 5, price: 110000, desc: 'Exfoliante chemical suave para desobstruir poros', skins: ['grasa','mixta'], emoji: '✨' },
+];
+
+let savedRoutines = [];
+let currentUser = null;
+let selectedRole = 'user';
+let activeCatFilter = 'all';
+let selectedSkinType = null;
+let selectedConcerns = [];
+let editingProductId = null;
+let editingCatId = null;
+let nextProdId = 11;
+let nextCatId = 7;
+
+// ── AUTH ──
+function switchAuthTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t,i) => {
+    t.classList.toggle('active', (i===0 && tab==='login') || (i===1 && tab==='register'));
+  });
+  document.getElementById('login-form').style.display = tab==='login' ? 'block' : 'none';
+  document.getElementById('register-form').style.display = tab==='register' ? 'block' : 'none';
+}
+
+function selectRole(role) {
+  selectedRole = role;
+  document.getElementById('role-user').classList.toggle('selected', role==='user');
+  document.getElementById('role-admin').classList.toggle('selected', role==='admin');
+}
+
+function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-password').value;
+  const user = USERS.find(u => u.email===email && u.password===pass);
+  if (!user) { showToast('Credenciales incorrectas', 'error'); return; }
+  loginAs(user);
+}
+
+function doRegister() {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pass = document.getElementById('reg-password').value;
+  if (!name || !email || !pass) { showToast('Completa todos los campos', 'error'); return; }
+  if (pass.length < 6) { showToast('Contraseña mínimo 6 caracteres', 'error'); return; }
+  const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  const newUser = { id: USERS.length+1, name, email, password: pass, role: selectedRole, initials };
+  USERS.push(newUser);
+  loginAs(newUser);
+}
+
+function loginAs(user) {
+  currentUser = user;
+  document.getElementById('auth-overlay').classList.add('hidden');
+  document.getElementById('app').classList.add('visible');
+  setupNavForRole(user.role);
+  document.getElementById('nav-avatar').textContent = user.initials;
+  document.getElementById('nav-username').textContent = user.name.split(' ')[0];
+  const rb = document.getElementById('nav-role-badge');
+  rb.textContent = user.role === 'admin' ? 'Admin' : 'Usuario';
+  rb.className = 'user-role ' + user.role;
+  updateStats();
+  showToast(`Bienvenida, ${user.name.split(' ')[0]} 🌿`, 'success');
+}
+
+function doLogout() {
+  currentUser = null;
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('auth-overlay').classList.remove('hidden');
+  document.getElementById('login-email').value = 'admin@glowlab.co';
+  document.getElementById('login-password').value = 'admin123';
+}
+
+function setupNavForRole(role) {
+  const nav = document.getElementById('nav-links');
+  let links = [
+    { id: 'dashboard', label: 'Inicio' },
+    { id: 'productos', label: 'Productos' },
+    { id: 'rutina', label: 'Mi Rutina' },
+  ];
+  if (role === 'admin') {
+    links.push({ id: 'categorias', label: 'Categorías' });
+    document.getElementById('btn-add-product').style.display = 'flex';
+  } else {
+    document.getElementById('btn-add-product').style.display = 'none';
+  }
+  nav.innerHTML = links.map(l =>
+    `<button class="nav-link${l.id==='dashboard'?' active':''}" onclick="showSection('${l.id}', this)">${l.label}</button>`
+  ).join('');
+  showSection('dashboard');
+  renderProducts();
+  renderCategories();
+  renderCatFilters();
+}
+
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('section-'+id).classList.add('active');
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  else {
+    const b = Array.from(document.querySelectorAll('.nav-link')).find(l => l.textContent.toLowerCase().includes(id.toLowerCase()) || (id==='dashboard' && l.textContent==='Inicio'));
+    if (b) b.classList.add('active');
+  }
+  if (id === 'rutina') renderSavedRoutines();
+}
+
+// ── STATS ──
+function updateStats() {
+  document.getElementById('stat-productos').textContent = products.length;
+  document.getElementById('stat-categorias').textContent = categories.length;
+  document.getElementById('stat-rutinas').textContent = savedRoutines.length;
+}
+
+// ── PRODUCTS ──
+function renderCatFilters() {
+  const f = document.getElementById('product-filters');
+  f.innerHTML = `<button class="filter-chip active" onclick="filterByCat('all', this)">Todos</button>` +
+    categories.map(c => `<button class="filter-chip" onclick="filterByCat(${c.id}, this)">${c.icon} ${c.name}</button>`).join('');
+}
+function filterByCat(catId, btn) {
+  activeCatFilter = catId;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  renderProducts();
+}
+function renderProducts() {
+  const q = (document.getElementById('search-product')?.value || '').toLowerCase();
+  let filtered = products.filter(p => {
+    const matchCat = activeCatFilter === 'all' || p.catId === activeCatFilter;
+    const matchQ = !q || p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q);
+    return matchCat && matchQ;
+  });
+  const isAdmin = currentUser && currentUser.role === 'admin';
+  const grid = document.getElementById('product-grid');
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon">🔍</div><p>No se encontraron productos</p></div>`;
+    return;
+  }
+  grid.innerHTML = filtered.map(p => {
+    const cat = categories.find(c => c.id === p.catId);
+    const adminBtns = isAdmin
+      ? `<button class="btn-sm" onclick="openProductModal(${p.id})">Editar</button>
+         <button class="btn-sm danger" onclick="deleteProduct(${p.id})">Eliminar</button>`
+      : `<button class="btn-sm primary" onclick="addToRoutine(${p.id})">+ Rutina</button>`;
+    return `
+    <div class="product-card">
+      <div class="product-img" data-cat="${cat ? cat.name : ''}">
+        <span class="product-emoji">${p.emoji || '🧴'}</span>
+      </div>
+      <div class="product-body">
+        <div class="product-name">${p.name}</div>
+        <div class="product-brand">${p.brand}</div>
+        <div class="product-desc">${p.desc}</div>
+        <div class="product-skin-tags">${p.skins.map(s=>`<span class="skin-tag">${s}</span>`).join('')}</div>
+      </div>
+      <div class="product-footer">
+        <div class="product-price">$${(p.price/1000).toFixed(0)}k</div>
+        <div class="product-actions">${adminBtns}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openProductModal(id) {
+  editingProductId = id || null;
+  const modal = document.getElementById('modal-product');
+  const sel = document.getElementById('product-cat-input');
+  sel.innerHTML = '<option value="">Seleccionar...</option>' +
+    categories.map(c => `<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
+  if (id) {
+    const p = products.find(x => x.id === id);
+    document.getElementById('modal-product-title').textContent = 'Editar producto';
+    document.getElementById('product-name-input').value = p.name;
+    document.getElementById('product-brand-input').value = p.brand;
+    document.getElementById('product-cat-input').value = p.catId;
+    document.getElementById('product-price-input').value = p.price;
+    document.getElementById('product-desc-input').value = p.desc;
+    document.getElementById('product-skin-input').value = p.skins.join(', ');
+  } else {
+    document.getElementById('modal-product-title').textContent = 'Nuevo producto';
+    ['product-name-input','product-brand-input','product-price-input','product-desc-input','product-skin-input'].forEach(f => document.getElementById(f).value='');
+    sel.value = '';
+  }
+  modal.classList.add('open');
+}
+
+function saveProduct() {
+  const name = document.getElementById('product-name-input').value.trim();
+  const brand = document.getElementById('product-brand-input').value.trim();
+  const catId = parseInt(document.getElementById('product-cat-input').value);
+  const price = parseInt(document.getElementById('product-price-input').value);
+  const desc = document.getElementById('product-desc-input').value.trim();
+  const skins = document.getElementById('product-skin-input').value.split(',').map(s=>s.trim()).filter(Boolean);
+  if (!name || !brand || !catId || !price) { showToast('Completa los campos obligatorios', 'error'); return; }
+  const emojis = ['🧴','💧','✨','🌿','🍋','⚗️','🫙','☀️','🌹','💎','🫧'];
+  if (editingProductId) {
+    const idx = products.findIndex(p => p.id === editingProductId);
+    products[idx] = { ...products[idx], name, brand, catId, price, desc, skins };
+    showToast('Producto actualizado', 'success');
+  } else {
+    products.push({ id: nextProdId++, name, brand, catId, price, desc, skins, emoji: emojis[Math.floor(Math.random()*emojis.length)] });
+    showToast('Producto creado', 'success');
+  }
+  closeModal('modal-product');
+  renderProducts();
+  updateStats();
+  renderCatFilters();
+}
+
+function deleteProduct(id) {
+  if (!confirm('¿Eliminar este producto?')) return;
+  products = products.filter(p => p.id !== id);
+  renderProducts();
+  updateStats();
+  showToast('Producto eliminado');
+}
+
+// ── CATEGORIES ──
+function renderCategories() {
+  if (currentUser?.role !== 'admin') return;
+  const grid = document.getElementById('categories-grid');
+  grid.innerHTML = categories.map(c => `
+    <div class="category-card">
+      <div class="cat-icon">${c.icon}</div>
+      <div class="cat-name">${c.name}</div>
+      <div class="cat-count">${c.desc}</div>
+      <div class="cat-actions">
+        <button class="btn-sm" onclick="openCatModal(${c.id})">Editar</button>
+        <button class="btn-sm danger" onclick="deleteCat(${c.id})">Eliminar</button>
+      </div>
+    </div>`).join('');
+}
+
+function openCatModal(id) {
+  editingCatId = id || null;
+  const modal = document.getElementById('modal-category');
+  if (id) {
+    const c = categories.find(x => x.id === id);
+    document.getElementById('modal-cat-title').textContent = 'Editar categoría';
+    document.getElementById('cat-name-input').value = c.name;
+    document.getElementById('cat-desc-input').value = c.desc;
+    document.getElementById('cat-icon-input').value = c.icon;
+  } else {
+    document.getElementById('modal-cat-title').textContent = 'Nueva categoría';
+    ['cat-name-input','cat-desc-input','cat-icon-input'].forEach(f => document.getElementById(f).value='');
+  }
+  modal.classList.add('open');
+}
+
+function saveCategory() {
+  const name = document.getElementById('cat-name-input').value.trim();
+  const desc = document.getElementById('cat-desc-input').value.trim();
+  const icon = document.getElementById('cat-icon-input').value.trim() || '🧴';
+  if (!name) { showToast('Ingresa un nombre', 'error'); return; }
+  if (editingCatId) {
+    const idx = categories.findIndex(c => c.id === editingCatId);
+    categories[idx] = { ...categories[idx], name, desc, icon };
+    showToast('Categoría actualizada', 'success');
+  } else {
+    categories.push({ id: nextCatId++, name, desc, icon, count: 0 });
+    showToast('Categoría creada', 'success');
+  }
+  closeModal('modal-category');
+  renderCategories();
+  renderCatFilters();
+  updateStats();
+}
+
+function deleteCat(id) {
+  if (!confirm('¿Eliminar esta categoría?')) return;
+  categories = categories.filter(c => c.id !== id);
+  renderCategories();
+  renderCatFilters();
+  updateStats();
+  showToast('Categoría eliminada');
+}
+
+// ── ROUTINE ──
+function selectSkin(btn) {
+  document.querySelectorAll('.skin-opt').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedSkinType = btn.dataset.type;
+}
+function toggleConcern(btn) {
+  btn.classList.toggle('selected');
+  const c = btn.dataset.c;
+  if (selectedConcerns.includes(c)) selectedConcerns = selectedConcerns.filter(x=>x!==c);
+  else selectedConcerns.push(c);
+}
+
+function generateRoutine() {
+  if (!selectedSkinType) { showToast('Selecciona tu tipo de piel', 'error'); return; }
+  const compatible = products.filter(p => p.skins.includes(selectedSkinType));
+  const steps = [
+    { num: 1, name: 'Limpieza', catId: 1, time: 'AM/PM' },
+    { num: 2, name: 'Tónico', catId: 5, time: 'AM/PM' },
+    { num: 3, name: 'Sérum', catId: 2, time: 'AM/PM' },
+    { num: 4, name: 'Hidratante', catId: 3, time: 'AM/PM' },
+    { num: 5, name: 'Protector Solar', catId: 4, time: 'AM' },
+  ];
+  const out = document.getElementById('routine-output');
+  const routineSteps = steps.map(s => {
+    const prod = compatible.find(p => p.catId === s.catId);
+    return { ...s, product: prod };
+  });
+  out.innerHTML = routineSteps.map(s => `
+    <div class="routine-step">
+      <div class="step-num">${s.num}</div>
+      <div class="step-info">
+        <div class="step-name">${s.name} <span style="font-size:10px;color:var(--light);margin-left:4px;">${s.time}</span></div>
+        <div class="step-product">${s.product ? s.product.name + ' · ' + s.product.brand : 'Sin recomendación disponible'}</div>
+      </div>
+    </div>`).join('');
+
+  const routineName = `Rutina ${selectedSkinType.charAt(0).toUpperCase()+selectedSkinType.slice(1)}`;
+  const exists = savedRoutines.find(r => r.name === routineName);
+  if (!exists) {
+    savedRoutines.push({
+      id: Date.now(),
+      name: routineName,
+      skin: selectedSkinType,
+      concerns: [...selectedConcerns],
+      steps: routineSteps
+    });
+    renderSavedRoutines();
+    updateStats();
+  }
+  showToast('Rutina generada exitosamente 🌿', 'success');
+}
+
+function addToRoutine(productId) {
+  showToast('Agrega tu tipo de piel en la sección "Mi Rutina"');
+  showSection('rutina');
+}
+
+function renderSavedRoutines() {
+  const container = document.getElementById('saved-routines');
+  if (!savedRoutines.length) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><p>Aún no tienes rutinas guardadas</p></div>`;
+    return;
+  }
+  container.innerHTML = savedRoutines.map(r => `
+    <div class="routine-card">
+      <div class="routine-card-name">${r.name}</div>
+      <div class="routine-card-meta">${r.steps.filter(s=>s.product).length} productos · ${r.concerns.length ? r.concerns.join(', ') : 'Sin preocupaciones adicionales'}</div>
+      <div class="routine-card-steps">
+        ${r.steps.filter(s=>s.product).map(s=>`<div class="step-dot">${s.name}: <strong>${s.product.name}</strong></div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+// ── MODAL & TOAST ──
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('open');
+});
+
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type;
+  setTimeout(() => t.classList.add('show'), 10);
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
 </body>
 </html>

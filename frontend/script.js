@@ -1,106 +1,210 @@
-let carrito = [];
-
-// 🔥 ENDPOINTS
-const API_PRODUCTOS = "https://api-skincare-v2-994118614969.us-central1.run.app/api/productos";
+// ═══════════════════════════════════════════
+// ENDPOINTS
+// ═══════════════════════════════════════════
+const API_PRODUCTOS  = "https://api-skincare-v2-994118614969.us-central1.run.app/api/productos";
 const API_CATEGORIAS = "https://api-skincare-v2-994118614969.us-central1.run.app/api/categorias";
 
-// 🔥 IMÁGENES
+// ═══════════════════════════════════════════
+// USUARIOS (credenciales hardcoded HU-05)
+// ═══════════════════════════════════════════
+const USUARIOS = {
+  admin: { password: "admin123", rol: "Admin",   nombre: "Admin" },
+  user:  { password: "user123",  rol: "Usuario", nombre: "User"  }
+};
+
+let usuarioActual = null;
+let carrito = [];
+
+// ═══════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════
+function iniciarSesion() {
+  const username = document.getElementById("inputUsuario").value.trim().toLowerCase();
+  const password = document.getElementById("inputPassword").value;
+  const errorEl  = document.getElementById("loginError");
+
+  const user = USUARIOS[username];
+
+  if (!user || user.password !== password) {
+    errorEl.textContent = "Usuario o contraseña incorrectos.";
+    return;
+  }
+
+  errorEl.textContent = "";
+  usuarioActual = { username, ...user };
+
+  document.getElementById("loginScreen").classList.add("hidden");
+  document.getElementById("mainApp").classList.remove("hidden");
+
+  renderUI();
+  cargarProductos();
+}
+
+function cerrarSesion() {
+  usuarioActual = null;
+  carrito = [];
+  document.getElementById("mainApp").classList.add("hidden");
+  document.getElementById("loginScreen").classList.remove("hidden");
+  document.getElementById("inputUsuario").value = "";
+  document.getElementById("inputPassword").value = "";
+  mostrarSeccion("rutinas");
+}
+
+// ═══════════════════════════════════════════
+// RENDERIZADO CONDICIONAL POR ROL
+// ═══════════════════════════════════════════
+function renderUI() {
+  const esAdmin = usuarioActual.rol === "Admin";
+
+  // Iniciales en avatar (primeras 2 letras del username en mayúsculas)
+  const iniciales = usuarioActual.username.substring(0, 2).toUpperCase();
+  document.getElementById("userAvatar").textContent = iniciales;
+  document.getElementById("userName").textContent   = usuarioActual.nombre;
+  document.getElementById("userRole").textContent   = usuarioActual.rol;
+
+  // Pestaña "Categorías" solo visible para admin
+  const tabCategorias = document.getElementById("tabCategorias");
+  if (esAdmin) {
+    tabCategorias.classList.remove("hidden");
+  } else {
+    tabCategorias.classList.add("hidden");
+  }
+
+  // Botón "Agregar producto" desactivado para usuarios estándar
+  const btnAgregar = document.getElementById("btnAgregarProducto");
+  btnAgregar.disabled = !esAdmin;
+  btnAgregar.title = esAdmin ? "" : "Solo los administradores pueden agregar productos";
+}
+
+// ═══════════════════════════════════════════
+// NAVEGACIÓN POR TABS
+// ═══════════════════════════════════════════
+function mostrarSeccion(nombre) {
+  ["secRutinas", "secProductos", "secCategorias"].forEach(id => {
+    document.getElementById(id).classList.add("hidden");
+  });
+
+  document.querySelectorAll(".nav-tab").forEach(tab => {
+    tab.classList.toggle("active", tab.dataset.section === nombre);
+  });
+
+  document.getElementById("sec" + capitalizar(nombre)).classList.remove("hidden");
+
+  if (nombre === "categorias") cargarCategorias();
+}
+
+function capitalizar(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// ═══════════════════════════════════════════
+// IMÁGENES
+// ═══════════════════════════════════════════
 function imagenProducto(nombre) {
   const n = nombre.toLowerCase();
-
-  if (n.includes("gel"))
-    return "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=80";
-
-  if (n.includes("crema"))
-    return "https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?auto=format&fit=crop&w=400&q=80";
-
-  if (n.includes("vitamina"))
-    return "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=400&q=80";
-
-  if (n.includes("protector"))
-    return "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRXGPYjyqudAP0rGGZMpu2Z98-3_L2Bn7P_sg&s";
-
-  if (n.includes("serum"))
-    return "https://images.unsplash.com/photo-1611930022073-b7a4ba5fcccd?auto=format&fit=crop&w=400&q=80";
-
+  if (n.includes("gel"))      return "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=80";
+  if (n.includes("crema"))    return "https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?auto=format&fit=crop&w=400&q=80";
+  if (n.includes("vitamina")) return "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=400&q=80";
+  if (n.includes("protector"))return "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRXGPYjyqudAP0rGGZMpu2Z98-3_L2Bn7P_sg&s";
+  if (n.includes("serum"))    return "https://images.unsplash.com/photo-1611930022073-b7a4ba5fcccd?auto=format&fit=crop&w=400&q=80";
   return "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=400&q=80";
 }
 
-// 🔥 GENERAR RUTINA
+// ═══════════════════════════════════════════
+// RUTINAS
+// ═══════════════════════════════════════════
 async function generarRutina() {
-  const tipo = document.getElementById("tipoPiel").value;
+  const tipo     = document.getElementById("tipoPiel").value;
   const problema = document.getElementById("problema").value;
 
-  const res = await fetch(API_PRODUCTOS);
-  const data = await res.json();
+  try {
+    const res  = await fetch(API_PRODUCTOS);
+    const data = await res.json();
 
-  let rutina = [];
+    let rutina = data.filter(p => {
+      const nombre    = p.nombre.toLowerCase();
+      const categoria = p.categoria?.nombre?.toLowerCase();
+      return (
+        (tipo === "grasa"  && nombre.includes("gel")) ||
+        (tipo === "seca"   && nombre.includes("crema")) ||
+        (tipo === "mixta"  && (nombre.includes("gel") || nombre.includes("crema"))) ||
+        (problema === "manchas"    && (nombre.includes("vitamina") || categoria === "tratamiento")) ||
+        (problema === "hidratacion"&& categoria === "hidratacion") ||
+        (problema === "poros"      && (nombre.includes("serum")  || categoria === "tratamiento")) ||
+        (problema === "acne"       && categoria === "limpieza")
+      );
+    });
 
-  data.forEach(p => {
-    const nombre = p.nombre.toLowerCase();
-    const categoria = p.categoria?.nombre?.toLowerCase();
-
-    if (tipo === "grasa" && nombre.includes("gel")) rutina.push(p);
-    if (tipo === "seca" && nombre.includes("crema")) rutina.push(p);
-    if (tipo === "mixta" && (nombre.includes("gel") || nombre.includes("crema"))) rutina.push(p);
-
-    if (problema === "manchas" && (nombre.includes("vitamina") || categoria === "tratamiento")) rutina.push(p);
-    if (problema === "hidratacion" && categoria === "hidratacion") rutina.push(p);
-    if (problema === "poros" && (nombre.includes("serum") || categoria === "tratamiento")) rutina.push(p);
-    if (problema === "acne" && categoria === "limpieza") rutina.push(p);
-  });
-
-  rutina = rutina.filter((v,i,a) => a.findIndex(t => (t.id === v.id)) === i);
-
-  mostrarRutina(rutina);
+    // eliminar duplicados
+    rutina = [...new Map(rutina.map(p => [p.id, p])).values()];
+    mostrarRutina(rutina);
+  } catch {
+    alert("No se pudo conectar con la API ❌");
+  }
 }
 
-// 🔥 MOSTRAR RUTINA
 function mostrarRutina(lista) {
   const contenedor = document.getElementById("rutina");
-  contenedor.innerHTML = "";
-
-  lista.forEach(p => {
-    contenedor.innerHTML += `
-      <div class="card">
-        <img src="${imagenProducto(p.nombre)}">
-        <h4>${p.nombre}</h4>
-        <p class="precio">$${p.precio}</p>
-        <button onclick='agregarCarrito(${JSON.stringify(p)})'>Agregar</button>
-        <button onclick='verCategoria(${p.id})'>Ver categoría</button>
-      </div>
-    `;
-  });
+  contenedor.innerHTML = lista.length === 0
+    ? "<p style='padding:10px'>No se encontraron productos para tu selección.</p>"
+    : lista.map(p => tarjetaProducto(p, true)).join("");
 }
 
-// 🔥 CARGAR PRODUCTOS
+// ═══════════════════════════════════════════
+// PRODUCTOS
+// ═══════════════════════════════════════════
 async function cargarProductos() {
-  const res = await fetch(API_PRODUCTOS);
-  const data = await res.json();
-
-  const contenedor = document.getElementById("productos");
-  contenedor.innerHTML = "";
-
-  data.forEach(p => {
-    contenedor.innerHTML += `
-      <div class="card">
-        <img src="${imagenProducto(p.nombre)}">
-        <h4>${p.nombre}</h4>
-        <p class="precio">$${p.precio}</p>
-        <button onclick='agregarCarrito(${JSON.stringify(p)})'>Añadir</button>
-      </div>
-    `;
-  });
+  try {
+    const res  = await fetch(API_PRODUCTOS);
+    const data = await res.json();
+    document.getElementById("productos").innerHTML = data.map(p => tarjetaProducto(p, false)).join("");
+  } catch {
+    document.getElementById("productos").innerHTML = "<p style='padding:10px'>Error al cargar productos ❌</p>";
+  }
 }
 
-// 🔥 RELACIÓN
+function tarjetaProducto(p, conCategoria) {
+  return `
+    <div class="card">
+      <img src="${imagenProducto(p.nombre)}" alt="${p.nombre}">
+      <h4>${p.nombre}</h4>
+      <p class="precio">$${p.precio.toLocaleString()}</p>
+      <button onclick='agregarCarrito(${JSON.stringify(p)})'>Añadir</button>
+      ${conCategoria ? `<button onclick="verCategoria(${p.id})">Ver categoría</button>` : ""}
+    </div>`;
+}
+
 async function verCategoria(id) {
-  const res = await fetch(`${API_PRODUCTOS}/${id}/categoria`);
-  const categoria = await res.json();
-  alert("Categoría: " + categoria.nombre);
+  try {
+    const res      = await fetch(`${API_PRODUCTOS}/${id}/categoria`);
+    const categoria = await res.json();
+    alert("Categoría: " + categoria.nombre);
+  } catch {
+    alert("Error al obtener categoría ❌");
+  }
 }
 
-// 🛒 CARRITO
+// ═══════════════════════════════════════════
+// CATEGORÍAS (admin)
+// ═══════════════════════════════════════════
+async function cargarCategorias() {
+  try {
+    const res  = await fetch(API_CATEGORIAS);
+    const data = await res.json();
+    document.getElementById("listaCategorias").innerHTML = data.map(c => `
+      <div class="categoria-card">
+        <span class="cat-icono">${c.icono || "🏷️"}</span>
+        <h4>${c.nombre}</h4>
+        <p>${c.descripcion || ""}</p>
+      </div>`).join("");
+  } catch {
+    document.getElementById("listaCategorias").innerHTML = "<p style='padding:10px'>Error al cargar categorías ❌</p>";
+  }
+}
+
+// ═══════════════════════════════════════════
+// CARRITO
+// ═══════════════════════════════════════════
 function agregarCarrito(producto) {
   carrito.push(producto);
   mostrarCarrito();
@@ -108,24 +212,20 @@ function agregarCarrito(producto) {
 
 function mostrarCarrito() {
   const contenedor = document.getElementById("carrito");
-  const totalEl = document.getElementById("total");
-
-  contenedor.innerHTML = "";
+  const totalEl    = document.getElementById("total");
   let total = 0;
 
-  carrito.forEach((p, i) => {
+  contenedor.innerHTML = carrito.map((p, i) => {
     total += p.precio;
-
-    contenedor.innerHTML += `
+    return `
       <div class="card">
         <h4>${p.nombre}</h4>
-        <p>$${p.precio}</p>
+        <p class="precio">$${p.precio.toLocaleString()}</p>
         <button onclick="eliminarProducto(${i})">Eliminar</button>
-      </div>
-    `;
-  });
+      </div>`;
+  }).join("");
 
-  totalEl.innerText = "$" + total;
+  totalEl.innerText = "$" + total.toLocaleString();
 }
 
 function eliminarProducto(index) {
@@ -133,42 +233,27 @@ function eliminarProducto(index) {
   mostrarCarrito();
 }
 
-// 🧾 FINALIZAR COMPRA ✅
+// ═══════════════════════════════════════════
+// COMPRA
+// ═══════════════════════════════════════════
 function finalizarCompra() {
-
   if (carrito.length === 0) {
     alert("El carrito está vacío ❌");
     return;
   }
 
-  const datos = carrito.map(p => ({
-    productoId: parseInt(p.id)  // ✅ fix casting
-  }));
-
-  console.log("Enviando datos:", datos);
+  const datos = carrito.map(p => ({ productoId: parseInt(p.id) }));
 
   fetch("https://api-skincare-v2-994118614969.us-central1.run.app/api/compras", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(datos)
   })
-  .then(res => {
-    console.log("Status:", res.status);
-    return res.text();
-  })
-  .then(data => {
-    console.log("Respuesta backend:", data);
+  .then(res => res.text())
+  .then(() => {
     alert("Compra guardada en BD ✅");
     carrito = [];
     mostrarCarrito();
   })
-  .catch(err => {
-    console.error(err);
-    alert("Error al guardar compra ❌");
-  });
+  .catch(() => alert("Error al guardar compra ❌"));
 }
-
-// 🚀 INIT
-window.onload = function () {
-  cargarProductos();
-};
