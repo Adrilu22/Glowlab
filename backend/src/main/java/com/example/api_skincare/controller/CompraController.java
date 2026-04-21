@@ -11,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/compras")
-@CrossOrigin("*")
 public class CompraController {
 
     private final CompraRepository compraRepo;
