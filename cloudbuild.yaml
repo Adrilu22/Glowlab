@@ -1,41 +1,62 @@
 steps:
-  # Paso 0: Compilar el proyecto con Maven
+  # ── 1. Compilar con Maven ──────────────────────────────────────
   - name: 'gcr.io/cloud-builders/mvn'
     args: ['clean', 'package', '-DskipTests']
     dir: 'backend'
 
-  # Paso 1: Listar archivos para verificar (Opcional, ayuda a depurar)
-  - name: 'ubuntu'
-    args: ['ls', '-R', 'backend/target']
-
-  # Paso 2: Construir la imagen de Docker (Corregido con :latest y ruta ./backend)
+  # ── 2. Construir imagen Docker ─────────────────────────────────
   - name: 'gcr.io/cloud-builders/docker'
-    args: [
-      'build', 
-      '-t', 'us-central1-docker.pkg.dev/api-de-skincare/cloud-run-source-deploy/skincare-api:latest', 
-      '-f', 'backend/Dockerfile', 
-      './backend'
-    ]
+    args:
+      - 'build'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/api-de-skincare/cloud-run-source-deploy/skincare-api:$COMMIT_SHA'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/api-de-skincare/cloud-run-source-deploy/skincare-api:latest'
+      - '-f'
+      - 'backend/Dockerfile'
+      - './backend'
 
-  # Paso 3: Subir la imagen al registro
+  # ── 3. Subir imagen a Artifact Registry ───────────────────────
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'us-central1-docker.pkg.dev/api-de-skincare/cloud-run-source-deploy/skincare-api:latest']
+    args: ['push', '--all-tags', 'us-central1-docker.pkg.dev/api-de-skincare/cloud-run-source-deploy/skincare-api']
 
-  # Paso 4: Desplegar en Cloud Run con las variables y permisos correctos
+  # ── 4. Desplegar en Cloud Run (contraseña desde Secret Manager) ─
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args:
-      [
-        'run', 'services', 'update', 'api-skincare-v2',
-        '--image=us-central1-docker.pkg.dev/api-de-skincare/cloud-run-source-deploy/skincare-api:latest',
-        '--region=us-central1',
-        '--add-cloudsql-instances=api-de-skincare:us-central1:skincare',
-        '--set-env-vars=DB_NAME=skincare_db,DB_USER=postgres,DB_PASSWORD=Aa1002416662,INSTANCE_CONNECTION_NAME=api-de-skincare:us-central1:skincare',
-        '--timeout=600',
-        '--cpu=2',
-        '--memory=2Gi',
-        '--quiet'
-      ]
+      - 'run'
+      - 'services'
+      - 'update'
+      - 'api-skincare-v2'
+      - '--image=us-central1-docker.pkg.dev/api-de-skincare/cloud-run-source-deploy/skincare-api:$COMMIT_SHA'
+      - '--region=us-central1'
+      - '--add-cloudsql-instances=api-de-skincare:us-central1:skincare'
+      - '--set-env-vars=DB_NAME=skincare_db,DB_USER=postgres,INSTANCE_CONNECTION_NAME=api-de-skincare:us-central1:skincare'
+      - '--set-secrets=DB_PASSWORD=db-password:latest'
+      - '--timeout=600'
+      - '--cpu=2'
+      - '--memory=2Gi'
+      - '--quiet'
+
+  # ── 5. Desplegar frontend en Firebase Hosting ─────────────────
+  - name: 'node:20-slim'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        npm install -g firebase-tools --quiet
+        firebase deploy --only hosting \
+          --project api-de-skincare-22722 \
+          --token $$FIREBASE_TOKEN \
+          --non-interactive
+    dir: 'frontend'
+    secretEnv: ['FIREBASE_TOKEN']
+
+availableSecrets:
+  secretManager:
+    - versionName: projects/api-de-skincare/secrets/firebase-token/versions/latest
+      env: 'FIREBASE_TOKEN'
 
 images:
+  - 'us-central1-docker.pkg.dev/api-de-skincare/cloud-run-source-deploy/skincare-api:$COMMIT_SHA'
   - 'us-central1-docker.pkg.dev/api-de-skincare/cloud-run-source-deploy/skincare-api:latest'

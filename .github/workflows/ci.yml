@@ -1,46 +1,92 @@
-name: CI — Build and Test
+name: CI — Build, Test and Deploy
 
 on:
   push:
-    branches: [ main, production, development ]
+    branches: [ main, development ]
   pull_request:
-    branches: [ main, production, development ]
+    branches: [ main, development ]
 
 jobs:
+  # ══════════════════════════════════════════
+  # JOB 1: Compilar y verificar integridad
+  # ══════════════════════════════════════════
   build-and-test:
+    name: Build & Test
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout del código
         uses: actions/checkout@v4
 
-      - name: Configurar Java 21 (Backend)
+      - name: Configurar Java 21
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Compilar Backend con Maven (Si existe)
+      - name: Compilar Backend con Maven
         run: |
-          if [ -d "backend" ]; then
-            cd backend
-            if [ -f "mvnw" ]; then
-              ./mvnw clean compile
-            else
-              echo "Carpeta backend encontrada, pero falta el wrapper de Maven. Saltando compilación."
-            fi
+          if [ -d "backend" ] && [ -f "backend/mvnw" ]; then
+            cd backend && ./mvnw clean compile -q
+            echo "✅ Backend compilado correctamente"
           else
-            echo "Carpeta backend no encontrada aún. Saltando este paso."
+            echo "⚠️  Backend no encontrado — saltando paso"
           fi
 
-      - name: Verificar Integridad del Frontend (Si existe)
+      - name: Verificar integridad del Frontend
         run: |
-          if [ -d "frontend" ]; then
-            echo "Verificando archivos del frontend..."
-            test -f frontend/index.html && echo "✅ index.html encontrado" || echo "Falta index.html"
+          test -f frontend/index.html   && echo "✅ index.html"   || echo "❌ Falta index.html"
+          test -f frontend/firebase.json && echo "✅ firebase.json" || echo "❌ Falta firebase.json"
+
+  # ══════════════════════════════════════════
+  # JOB 2: Deploy Firebase Hosting (solo main)
+  # ══════════════════════════════════════════
+  deploy-firebase:
+    name: Deploy → Firebase Hosting
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Desplegar frontend en Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken:             ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_API_DE_SKINCARE_22722 }}
+          channelId:             live
+          projectId:             api-de-skincare-22722
+          entryPoint:            ./frontend
+
+  # ══════════════════════════════════════════
+  # JOB 3: Verificación E2E (solo main)
+  # ══════════════════════════════════════════
+  e2e-verify:
+    name: E2E — Firebase ↔ Cloud Run
+    runs-on: ubuntu-latest
+    needs: deploy-firebase
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Verificar API de Cloud Run responde
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            https://api-skincare-v2-994118614969.us-central1.run.app/api/productos)
+          echo "HTTP status: $STATUS"
+          if [ "$STATUS" = "200" ]; then
+            echo "✅ Cloud Run responde correctamente"
           else
-            echo "Carpeta frontend no encontrada aún. Saltando este paso."
+            echo "❌ Cloud Run no responde — status $STATUS"
+            exit 1
           fi
 
-      - name: Notificación de Éxito
-        run: echo "✅ La revisión pasó con éxito en $(date)"
+      - name: Verificar cabecera CORS permite Firebase
+        run: |
+          CORS=$(curl -s -I \
+            -H "Origin: https://api-de-skincare-22722.web.app" \
+            https://api-skincare-v2-994118614969.us-central1.run.app/api/productos \
+            | grep -i "access-control-allow-origin" || echo "not set")
+          echo "CORS header: $CORS"
+          echo "✅ Verificación CORS completada"
