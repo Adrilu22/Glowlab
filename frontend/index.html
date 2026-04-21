@@ -817,6 +817,32 @@
     transition: background 0.15s;
   }
   .btn-delete:hover { background: #7A3A35; }
+
+  /* ── ROUTINE HISTORY CARDS ── */
+  .routine-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 6px; }
+  .routine-meta-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .routine-skin-badge {
+    font-size: 10px; padding: 3px 10px; border-radius: 20px;
+    background: var(--charcoal); color: #fff;
+    font-weight: 500; text-transform: capitalize;
+  }
+  .routine-concern-tag {
+    font-size: 10px; padding: 3px 10px; border-radius: 20px;
+    background: rgba(196,114,106,0.08); color: var(--rose-dark);
+    border: 1px solid rgba(196,114,106,0.2); font-weight: 400;
+  }
+  .routine-date { font-size: 11px; color: var(--light); font-weight: 300; margin-bottom: 8px; }
+  .btn-delete-routine {
+    padding: 4px 10px; border: 1px solid rgba(196,114,106,0.3);
+    border-radius: 6px; background: transparent; font-size: 11px;
+    color: var(--rose); cursor: pointer; font-family: var(--font-body);
+    flex-shrink: 0; transition: all 0.15s;
+  }
+  .btn-delete-routine:hover { background: rgba(196,114,106,0.06); }
+
+  /* ── ROUTINE STEP ENHANCED ── */
+  .step-price { font-size: 11px; color: var(--rose); font-weight: 500; margin-top: 3px; }
+  .step-skin-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
 </style>
 </head>
 <body>
@@ -1461,41 +1487,77 @@ function toggleConcern(btn) {
 
 function generateRoutine() {
   if (!selectedSkinType) { showToast('Selecciona tu tipo de piel', 'error'); return; }
+
+  // 1. Filtra por tiposPiel compatible con la selección del usuario
   const compatible = products.filter(p => p.skins.includes(selectedSkinType));
+
+  // 2. Mapa de palabras clave por preocupación para priorizar productos
+  const concernKeywords = {
+    acne:        ['salicil', 'bha', 'acne', 'acné'],
+    manchas:     ['vitamina c', 'vitamin c', 'mancha', 'ilumina', 'tono', 'luminosid'],
+    poros:       ['poro', 'niacinamid', 'zinc', 'bha', 'exfoli'],
+    hidratacion: ['hialuro', 'hyaluro', 'hidrat', 'moisture', 'moisturizing'],
+    antiaging:   ['retinol', 'antiaging', 'antienvejecimi', 'líneas'],
+    luminosidad: ['vitamina c', 'vitamin c', 'luminosid', 'ilumina'],
+  };
+
+  // 3. Elige el producto más relevante según preocupaciones activas
+  function bestMatch(candidates) {
+    if (!candidates.length) return null;
+    if (!selectedConcerns.length) return candidates[0];
+    const keywords = selectedConcerns.flatMap(c => concernKeywords[c] || []);
+    return candidates.find(p =>
+      keywords.some(kw => (p.name + ' ' + p.desc).toLowerCase().includes(kw))
+    ) || candidates[0];
+  }
+
   const steps = [
-    { num: 1, name: 'Limpieza', catId: 1, time: 'AM/PM' },
-    { num: 2, name: 'Tónico', catId: 5, time: 'AM/PM' },
-    { num: 3, name: 'Sérum', catId: 2, time: 'AM/PM' },
-    { num: 4, name: 'Hidratante', catId: 3, time: 'AM/PM' },
-    { num: 5, name: 'Protector Solar', catId: 4, time: 'AM' },
+    { num: 1, name: 'Limpieza',        catId: 1, time: 'AM/PM', icon: '🫧' },
+    { num: 2, name: 'Tónico',          catId: 5, time: 'AM/PM', icon: '✨' },
+    { num: 3, name: 'Sérum',           catId: 2, time: 'AM/PM', icon: '💧' },
+    { num: 4, name: 'Hidratante',      catId: 3, time: 'AM/PM', icon: '🧴' },
+    { num: 5, name: 'Protector Solar', catId: 4, time: 'AM',    icon: '☀️' },
   ];
+
+  const routineSteps = steps.map(s => ({
+    ...s,
+    product: bestMatch(compatible.filter(p => p.catId === s.catId))
+  }));
+
+  const VALID_TYPES = ['grasa','seca','mixta','sensible','normal'];
   const out = document.getElementById('routine-output');
-  const routineSteps = steps.map(s => {
-    const prod = compatible.find(p => p.catId === s.catId);
-    return { ...s, product: prod };
-  });
   out.innerHTML = routineSteps.map(s => `
     <div class="routine-step">
       <div class="step-num">${s.num}</div>
       <div class="step-info">
-        <div class="step-name">${s.name} <span style="font-size:10px;color:var(--light);margin-left:4px;">${s.time}</span></div>
-        <div class="step-product">${s.product ? s.product.name + ' · ' + s.product.brand : 'Sin recomendación disponible'}</div>
+        <div class="step-name">${s.icon} ${s.name}
+          <span style="font-size:10px;color:var(--light);margin-left:6px;">${s.time}</span>
+        </div>
+        ${s.product
+          ? `<div class="step-product">${s.product.name} · <span style="color:var(--light)">${s.product.brand}</span></div>
+             <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+               <span class="step-price">$${(s.product.price/1000).toFixed(0)}k</span>
+               <span class="step-skin-tags">${s.product.skins.map(sk =>
+                 `<span class="skin-tag skin-tag-${VALID_TYPES.includes(sk)?sk:'default'}">${sk}</span>`
+               ).join('')}</span>
+             </div>`
+          : `<div class="step-product" style="color:var(--light);font-style:italic;">Sin producto disponible para esta combinación</div>`
+        }
       </div>
     </div>`).join('');
 
+  // 4. Guarda siempre en el historial con timestamp
   const routineName = `Rutina ${selectedSkinType.charAt(0).toUpperCase()+selectedSkinType.slice(1)}`;
-  const exists = savedRoutines.find(r => r.name === routineName);
-  if (!exists) {
-    savedRoutines.push({
-      id: Date.now(),
-      name: routineName,
-      skin: selectedSkinType,
-      concerns: [...selectedConcerns],
-      steps: routineSteps
-    });
-    renderSavedRoutines();
-    updateStats();
-  }
+  savedRoutines.unshift({
+    id: Date.now(),
+    name: routineName,
+    skin: selectedSkinType,
+    concerns: [...selectedConcerns],
+    steps: routineSteps,
+    createdAt: new Date().toLocaleDateString('es-CO', { day:'numeric', month:'short', year:'numeric' })
+  });
+  renderSavedRoutines();
+  updateStats();
   showToast('Rutina generada exitosamente 🌿', 'success');
 }
 
@@ -1507,17 +1569,38 @@ function addToRoutine(productId) {
 function renderSavedRoutines() {
   const container = document.getElementById('saved-routines');
   if (!savedRoutines.length) {
-    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><p>Aún no tienes rutinas guardadas</p></div>`;
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><p>Aún no tienes rutinas guardadas. ¡Genera tu primera rutina personalizada!</p></div>`;
     return;
   }
-  container.innerHTML = savedRoutines.map(r => `
+  container.innerHTML = savedRoutines.map(r => {
+    const productCount = r.steps.filter(s => s.product).length;
+    return `
     <div class="routine-card">
-      <div class="routine-card-name">${r.name}</div>
-      <div class="routine-card-meta">${r.steps.filter(s=>s.product).length} productos · ${r.concerns.length ? r.concerns.join(', ') : 'Sin preocupaciones adicionales'}</div>
-      <div class="routine-card-steps">
-        ${r.steps.filter(s=>s.product).map(s=>`<div class="step-dot">${s.name}: <strong>${s.product.name}</strong></div>`).join('')}
+      <div class="routine-header">
+        <div class="routine-card-name">${r.name}</div>
+        <button class="btn-delete-routine" onclick="deleteRoutine(${r.id})">✕ Eliminar</button>
       </div>
-    </div>`).join('');
+      <div class="routine-date">${r.createdAt || ''} · ${productCount} producto${productCount !== 1 ? 's' : ''}</div>
+      <div class="routine-meta-tags">
+        <span class="routine-skin-badge">${r.skin}</span>
+        ${r.concerns.map(c => `<span class="routine-concern-tag">${c}</span>`).join('')}
+        ${!r.concerns.length ? '<span style="font-size:11px;color:var(--light)">Sin preocupaciones</span>' : ''}
+      </div>
+      <div class="routine-card-steps">
+        ${r.steps.filter(s => s.product).map(s =>
+          `<div class="step-dot">${s.icon || ''} <strong>${s.name}:</strong> ${s.product.name}</div>`
+        ).join('')}
+        ${!productCount ? '<div style="color:var(--light);font-size:12px;font-style:italic;">No se encontraron productos compatibles</div>' : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function deleteRoutine(id) {
+  savedRoutines = savedRoutines.filter(r => r.id !== id);
+  renderSavedRoutines();
+  updateStats();
+  showToast('Rutina eliminada del historial');
 }
 
 // ── MODAL & TOAST ──
