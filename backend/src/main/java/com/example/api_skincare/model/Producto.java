@@ -16,8 +16,13 @@ public class Producto {
 
     private String nombre;
 
+    private String marca;
+
+    private String descripcion;
+
     private double precio;
-    
+
+    private String tiposPiel;
 
     @ManyToOne
     @JoinColumn(name = "categoria_id")
