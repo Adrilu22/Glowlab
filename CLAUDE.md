@@ -76,8 +76,8 @@ GlowLab/
 │       ├── java/com/example/api_skincare/
 │       │   ├── Application.java
 │       │   ├── model/
-│       │   │   ├── Categoria.java          # Entidad JPA
-│       │   │   └── Producto.java           # Entidad JPA
+│       │   │   ├── Categoria.java
+│       │   │   └── Producto.java
 │       │   ├── repository/
 │       │   │   ├── CategoriaRepository.java
 │       │   │   └── ProductoRepository.java
@@ -168,10 +168,10 @@ La rama ya fue creada por Claude Code — el bloque empieza directo en los commi
 
 # Commits por archivo (ejecutar en orden)
 git add backend/src/main/java/com/example/api_skincare/model/Categoria.java
-git commit -m "feat: agregar entidad Categoria con JPA - closes #2"
+git commit -m "feat: agregar campos descripcion e icono a entidad Categoria JPA - closes #2"
 
 git add backend/src/main/java/com/example/api_skincare/repository/CategoriaRepository.java
-git commit -m "feat: agregar CategoriaRepository con búsqueda parcial - closes #2"
+git commit -m "feat: agregar CategoriaRepository con búsqueda por nombre - closes #2"
 
 git add backend/src/main/java/com/example/api_skincare/controller/CategoriaController.java
 git commit -m "feat: implementar CRUD completo /api/categorias - closes #2"
@@ -207,7 +207,11 @@ Nunca un solo `git add .` para toda la historia.
 ### Base de datos
 - **PostgreSQL 15** en Cloud SQL
 - Conexión via **Cloud SQL Socket Factory** (no TCP directo)
+<<<<<<< HEAD
 - Tablas principales: `categoria`, `producto`
+=======
+- Tablas principales: `categoria`, `producto`, `compra`, `detalle_compra`
+>>>>>>> a09570d (docs: adaptar CLAUDE.md al proyecto GlowLab)
 - Variables de entorno: `DB_USER`, `DB_PASSWORD`, `INSTANCE_CONNECTION_NAME`, `PORT`
 
 ### Endpoints que debo implementar
