@@ -1176,7 +1176,7 @@ function mapProducto(p) {
     catId: p.categoria?.id,
     price: p.precio,
     desc:  p.descripcion  || '',
-    skins: p.tiposPiel ? p.tiposPiel.split(',').map(s => s.trim()).filter(Boolean) : [],
+    skins: Array.isArray(p.tiposPiel) ? p.tiposPiel.filter(Boolean) : (p.tiposPiel ? p.tiposPiel.split(',').map(s => s.trim()).filter(Boolean) : []),
     emoji: emojiDesdeNombre(p.nombre)
   };
 }
