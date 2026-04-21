@@ -1158,27 +1158,67 @@ const USERS = [
   { id: 2, name: 'Sary Ariza', email: 'user@glowlab.co', password: 'user123', role: 'user', initials: 'SA' }
 ];
 
-let categories = [
-  { id: 1, name: 'Limpiadores', desc: 'Limpieza diaria facial', icon: '🫧', count: 2 },
-  { id: 2, name: 'Sérum', desc: 'Tratamientos concentrados', icon: '💧', count: 3 },
-  { id: 3, name: 'Hidratante', desc: 'Cremas y lociones', icon: '🧴', count: 2 },
-  { id: 4, name: 'Protector Solar', desc: 'Protección UV diaria', icon: '☀️', count: 2 },
-  { id: 5, name: 'Tónico', desc: 'Equilibrio y preparación', icon: '✨', count: 2 },
-  { id: 6, name: 'Exfoliante', desc: 'Renovación celular', icon: '🌿', count: 1 },
-];
+const API_BASE = 'https://api-skincare-v2-994118614969.us-central1.run.app';
 
-let products = [
-  { id: 1, name: 'Gentle Foaming Cleanser', brand: 'CeraVe', catId: 1, price: 62000, desc: 'Limpiador suave con ceramidas para piel sensible y mixta', skins: ['sensible','mixta','seca'], emoji: '🫧' },
-  { id: 2, name: 'Salicylic Acid 2%', brand: 'The Ordinary', catId: 1, price: 28000, desc: 'Limpiador con BHA para piel grasa y con acné', skins: ['grasa','mixta'], emoji: '🧪' },
-  { id: 3, name: 'Sérum Vitamina C 10%', brand: 'Sesderma', catId: 2, price: 95000, desc: 'Ilumina manchas y unifica el tono de la piel', skins: ['grasa','seca','mixta','sensible'], emoji: '🍋' },
-  { id: 4, name: 'Hyaluronic Acid 2%+B5', brand: 'The Ordinary', catId: 2, price: 32000, desc: 'Hidratación profunda y relleno de líneas finas', skins: ['seca','mixta','sensible'], emoji: '💎' },
-  { id: 5, name: 'Niacinamide 10% + Zinc', brand: 'The Ordinary', catId: 2, price: 30000, desc: 'Reduce poros y controla el sebo', skins: ['grasa','mixta'], emoji: '⚗️' },
-  { id: 6, name: 'Moisturizing Cream', brand: 'CeraVe', catId: 3, price: 55000, desc: 'Hidratante reparadora con ceramidas y ácido hialurónico', skins: ['seca','sensible','mixta'], emoji: '🫙' },
-  { id: 7, name: 'Oil-Free SPF 50+', brand: 'Heliocare', catId: 4, price: 78000, desc: 'Protector solar sin aceites ideal para piel grasa', skins: ['grasa','mixta'], emoji: '☀️' },
-  { id: 8, name: 'Sunscreen SPF 30', brand: 'La Roche-Posay', catId: 4, price: 89000, desc: 'Protector mineral para piel sensible', skins: ['sensible','seca'], emoji: '🌞' },
-  { id: 9, name: 'Rose Water Toner', brand: 'Mario Badescu', catId: 5, price: 42000, desc: 'Tónico calmante con agua de rosas y aloe vera', skins: ['sensible','seca'], emoji: '🌹' },
-  { id: 10, name: 'BHA Liquid Exfoliant', brand: 'Paula\'s Choice', catId: 5, price: 110000, desc: 'Exfoliante chemical suave para desobstruir poros', skins: ['grasa','mixta'], emoji: '✨' },
-];
+let categories = [];
+let products    = [];
+
+// ── MAPPERS API ↔ modelo local ──
+function mapCategoria(c) {
+  return { id: c.id, name: c.nombre, desc: c.descripcion || '', icon: c.icono || '🧴' };
+}
+
+function mapProducto(p) {
+  return {
+    id:    p.id,
+    name:  p.nombre,
+    brand: p.marca        || '',
+    catId: p.categoria?.id,
+    price: p.precio,
+    desc:  p.descripcion  || '',
+    skins: p.tiposPiel ? p.tiposPiel.split(',').map(s => s.trim()).filter(Boolean) : [],
+    emoji: emojiDesdeNombre(p.nombre)
+  };
+}
+
+function emojiDesdeNombre(n = '') {
+  n = n.toLowerCase();
+  if (n.includes('limpiador') || n.includes('cleanser') || n.includes('gel')) return '🫧';
+  if (n.includes('vitamina c') || n.includes('vitamin c'))  return '🍋';
+  if (n.includes('retinol'))                                return '🌙';
+  if (n.includes('niacinamide') || n.includes('niacinamida')) return '⚗️';
+  if (n.includes('hyaluronic')  || n.includes('hialurón'))  return '💎';
+  if (n.includes('spf')         || n.includes('solar'))     return '☀️';
+  if (n.includes('tónic')       || n.includes('toner'))     return '🌹';
+  if (n.includes('sérum')       || n.includes('serum'))     return '💧';
+  if (n.includes('crema')       || n.includes('cream') || n.includes('moistur')) return '🫙';
+  if (n.includes('exfoli'))                                 return '🌿';
+  return '🧴';
+}
+
+// ── FETCH FUNCTIONS ──
+async function fetchCategoriesFromAPI() {
+  const res = await fetch(`${API_BASE}/api/categorias`);
+  if (!res.ok) throw new Error('Error al cargar categorías');
+  return (await res.json()).map(mapCategoria);
+}
+
+async function fetchProductsFromAPI() {
+  const res = await fetch(`${API_BASE}/api/productos`);
+  if (!res.ok) throw new Error('Error al cargar productos');
+  return (await res.json()).map(mapProducto);
+}
+
+async function loadDataFromAPI() {
+  try {
+    [categories, products] = await Promise.all([
+      fetchCategoriesFromAPI(),
+      fetchProductsFromAPI()
+    ]);
+  } catch {
+    showToast('Sin conexión con la API — mostrando vista vacía.', 'error');
+  }
+}
 
 let savedRoutines = [];
 let currentUser = null;
@@ -1226,16 +1266,17 @@ function doRegister() {
   loginAs(newUser);
 }
 
-function loginAs(user) {
+async function loginAs(user) {
   currentUser = user;
   document.getElementById('auth-overlay').classList.add('hidden');
   document.getElementById('app').classList.add('visible');
-  setupNavForRole(user.role);
-  document.getElementById('nav-avatar').textContent = user.initials;
-  document.getElementById('nav-username').textContent = user.name.split(' ')[0];
+  document.getElementById('nav-avatar').textContent    = user.initials;
+  document.getElementById('nav-username').textContent  = user.name.split(' ')[0];
   const rb = document.getElementById('nav-role-badge');
   rb.textContent = user.role === 'admin' ? 'Admin' : 'Usuario';
-  rb.className = 'user-role ' + user.role;
+  rb.className   = 'user-role ' + user.role;
+  await loadDataFromAPI();
+  setupNavForRole(user.role);
   updateStats();
   showToast(`Bienvenida, ${user.name.split(' ')[0]} 🌿`, 'success');
 }
@@ -1369,27 +1410,35 @@ function openProductModal(id) {
   modal.classList.add('open');
 }
 
-function saveProduct() {
-  const name = document.getElementById('product-name-input').value.trim();
+async function saveProduct() {
+  const name  = document.getElementById('product-name-input').value.trim();
   const brand = document.getElementById('product-brand-input').value.trim();
   const catId = parseInt(document.getElementById('product-cat-input').value);
   const price = parseInt(document.getElementById('product-price-input').value);
-  const desc = document.getElementById('product-desc-input').value.trim();
+  const desc  = document.getElementById('product-desc-input').value.trim();
   const skins = Array.from(document.querySelectorAll('#skin-checks-group input:checked')).map(cb => cb.value);
   if (!name || !brand || !catId || !price) { showToast('Completa los campos obligatorios', 'error'); return; }
-  const emojis = ['🧴','💧','✨','🌿','🍋','⚗️','🫙','☀️','🌹','💎','🫧'];
-  if (editingProductId) {
-    const idx = products.findIndex(p => p.id === editingProductId);
-    products[idx] = { ...products[idx], name, brand, catId, price, desc, skins };
-    showToast('Producto actualizado', 'success');
-  } else {
-    products.push({ id: nextProdId++, name, brand, catId, price, desc, skins, emoji: emojis[Math.floor(Math.random()*emojis.length)] });
-    showToast('Producto creado', 'success');
+
+  const payload = {
+    nombre: name, marca: brand, descripcion: desc,
+    precio: price, tiposPiel: skins.join(','),
+    categoria: { id: catId }
+  };
+
+  try {
+    const url    = editingProductId ? `${API_BASE}/api/productos/${editingProductId}` : `${API_BASE}/api/productos`;
+    const method = editingProductId ? 'PUT' : 'POST';
+    const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    if (!res.ok) throw new Error();
+    showToast(editingProductId ? 'Producto actualizado ✅' : 'Producto creado ✅', 'success');
+    closeModal('modal-product');
+    products = await fetchProductsFromAPI();
+    renderProducts();
+    updateStats();
+    renderCatFilters();
+  } catch {
+    showToast('Error al guardar el producto ❌', 'error');
   }
-  closeModal('modal-product');
-  renderProducts();
-  updateStats();
-  renderCatFilters();
 }
 
 function deleteProduct(id) {
@@ -1397,11 +1446,18 @@ function deleteProduct(id) {
   showConfirmDelete(
     `¿Eliminar "${p.name}"?`,
     'El producto se eliminará del catálogo de forma permanente.',
-    () => {
-      products = products.filter(x => x.id !== id);
-      renderProducts();
-      updateStats();
-      showToast('Producto eliminado');
+    async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/productos/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error();
+        products = await fetchProductsFromAPI();
+        renderProducts();
+        updateStats();
+        renderCatFilters();
+        showToast('Producto eliminado');
+      } catch {
+        showToast('Error al eliminar el producto ❌', 'error');
+      }
     }
   );
 }
@@ -1438,23 +1494,28 @@ function openCatModal(id) {
   modal.classList.add('open');
 }
 
-function saveCategory() {
+async function saveCategory() {
   const name = document.getElementById('cat-name-input').value.trim();
   const desc = document.getElementById('cat-desc-input').value.trim();
   const icon = document.getElementById('cat-icon-input').value.trim() || '🧴';
   if (!name) { showToast('Ingresa un nombre', 'error'); return; }
-  if (editingCatId) {
-    const idx = categories.findIndex(c => c.id === editingCatId);
-    categories[idx] = { ...categories[idx], name, desc, icon };
-    showToast('Categoría actualizada', 'success');
-  } else {
-    categories.push({ id: nextCatId++, name, desc, icon, count: 0 });
-    showToast('Categoría creada', 'success');
+
+  const payload = { nombre: name, descripcion: desc, icono: icon };
+
+  try {
+    const url    = editingCatId ? `${API_BASE}/api/categorias/${editingCatId}` : `${API_BASE}/api/categorias`;
+    const method = editingCatId ? 'PUT' : 'POST';
+    const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    if (!res.ok) throw new Error();
+    showToast(editingCatId ? 'Categoría actualizada ✅' : 'Categoría creada ✅', 'success');
+    closeModal('modal-category');
+    categories = await fetchCategoriesFromAPI();
+    renderCategories();
+    renderCatFilters();
+    updateStats();
+  } catch {
+    showToast('Error al guardar la categoría ❌', 'error');
   }
-  closeModal('modal-category');
-  renderCategories();
-  renderCatFilters();
-  updateStats();
 }
 
 function deleteCat(id) {
@@ -1462,12 +1523,18 @@ function deleteCat(id) {
   showConfirmDelete(
     `¿Eliminar "${c.name}"?`,
     'La categoría y su asociación con los productos se eliminará de forma permanente.',
-    () => {
-      categories = categories.filter(x => x.id !== id);
-      renderCategories();
-      renderCatFilters();
-      updateStats();
-      showToast('Categoría eliminada');
+    async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/categorias/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error();
+        categories = await fetchCategoriesFromAPI();
+        renderCategories();
+        renderCatFilters();
+        updateStats();
+        showToast('Categoría eliminada');
+      } catch {
+        showToast('Error al eliminar la categoría ❌', 'error');
+      }
     }
   );
 }
