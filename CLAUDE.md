@@ -1,4 +1,4 @@
-# CLAUDE.md — GameVault (Persona 1: Backend + BD)
+# CLAUDE.md — GlowLab (Persona 1: Backend + BD)
 
 ## Instalación de skills al iniciar
 Ejecuta estos comandos ANTES de cualquier tarea:
@@ -52,9 +52,9 @@ Pasos después de hacer `git push`:
 ---
 
 ## Contexto del proyecto
-- **Nombre:** GameVault — Gestor de Videojuegos
+- **Nombre:** GlowLab — Plataforma de Skincare Inteligente
 - **Stack:** Spring Boot 3.2 (Java 21) + HTML/CSS/JS + PostgreSQL 15
-- **Cloud:** GCP (Cloud Run + Cloud SQL, región us-central1)
+- **Cloud:** GCP (Cloud Run + Cloud SQL, región us-central1) + Firebase Hosting (frontend)
 - **Metodología:** Kanban, 3 sprints, una rama feature por historia de usuario
 - **Mi rol:** Backend Developer + Product Owner (Persona 1)
 
@@ -62,37 +62,41 @@ Pasos después de hacer `git push`:
 
 ## Estructura del repositorio
 ```
-GameVault/
+GlowLab/
 ├── CLAUDE.md
-├── Dockerfile                  # Multi-stage: Maven build + JRE Alpine
 ├── cloudbuild.yaml             # CI/CD con Cloud Build
 ├── README.md
 ├── .github/workflows/
-│   ├── kanban-automation.yml   # Mueve cards del Kanban automáticamente
-│   └── deploy.yml              # Deploy a Cloud Run al hacer push a main
+│   ├── project-automation.yml  # Mueve cards del Kanban automáticamente
+│   └── ci.yml                  # Deploy a Cloud Run al hacer push a main
 ├── backend/
+│   ├── Dockerfile              # Multi-stage: Maven build + JRE Alpine
 │   ├── pom.xml
 │   └── src/main/
-│       ├── java/com/gamelist/
-│       │   ├── GameListApplication.java
-│       │   ├── AppConfig.java              # CORS + Swagger config
-│       │   ├── model/Models.java           # Entidades JPA
-│       │   ├── repository/Repositories.java
-│       │   ├── controller/Controllers.java
-│       │   └── exception/GlobalExceptionHandler.java
+│       ├── java/com/example/api_skincare/
+│       │   ├── Application.java
+│       │   ├── model/
+│       │   │   ├── Categoria.java          # Entidad JPA
+│       │   │   └── Producto.java           # Entidad JPA
+│       │   ├── repository/
+│       │   │   ├── CategoriaRepository.java
+│       │   │   └── ProductoRepository.java
+│       │   └── controller/
+│       │       ├── CategoriaController.java
+│       │       └── ProductoController.java
 │       └── resources/application.properties
 ├── frontend/
 │   ├── index.html
 │   ├── style.css
-│   └── app.js
+│   └── script.js
 ├── database/
 │   ├── schema.sql
 │   ├── seed.sql
 │   └── diagram.png
 └── docs/
     ├── HISTORIAS_USUARIO.md    # ← LEER ANTES DE CADA TAREA
-    ├── GUIA_GITHUB_PROJECTS.md
-    └── PLAN_COMMITS.sh
+    ├── api-documentation.md
+    └── deployment-guide.md
 ```
 
 ---
@@ -114,21 +118,18 @@ feature/*     → una rama por historia de usuario (temporal)
 
 ---
 
-## Mis historias de usuario (Sprint 1 y partes del Sprint 3)
+## Mis historias de usuario (Sprint 1, 2 y 3)
 
 Lee los criterios completos en `docs/HISTORIAS_USUARIO.md`
 
 | # | Historia | Rama | Issue | Sprint |
 |---|---|---|---|---|
-| HU-01 | CRUD Videojuegos | `feature/sprint1-backend-videojuegos` | #1 | 1 |
-| HU-02 | Categorías | `feature/sprint1-backend-categorias` | #2 | 1 |
-| HU-03 | Plataformas | `feature/sprint1-backend-plataformas` | #3 | 1 |
-| HU-04 | Búsqueda y filtros API | `feature/sprint1-backend-filtros` | #4 | 1 |
-| HU-05 | Cloud SQL setup | `feature/sprint1-database-setup` | #5 | 1 |
-| HU-06 | Reseñas | `feature/sprint1-backend-resenas` | #6 | 1 |
-| HU-18 | Wishlist API | `feature/sprint1-backend-wishlist` | #18 | 1 |
-| HU-14 | CI/CD GitHub Actions | `feature/sprint3-cicd` | #14 | 3 |
-| HU-17 | Swagger HTTPS + errores | `feature/sprint3-backend-fixes` | #17 | 3 |
+| HU-01 | Modelado de BD PostgreSQL para entidades con nuevos campos | `feature/sprint1-database-schema` | #1 | 1 |
+| HU-02 | API REST - CRUD completo para Categorías | `feature/sprint1-backend-categorias` | #2 | 1 |
+| HU-05 | Sistema de Login Dual y renderizado condicional por Rol | `feature/sprint2-frontend-login` | #5 | 2 |
+| HU-06 | Panel de Administración Frontend para Categorías | `feature/sprint2-frontend-categorias` | #6 | 2 |
+| HU-09 | Integración Fetch API: Conectar Frontend con Backend REST | `feature/sprint3-frontend-fetch-api` | #9 | 3 |
+| HU-10 | Pipeline CI/CD y Despliegue en GCP/Firebase | `feature/sprint3-cicd-deploy` | #10 | 3 |
 
 ---
 
@@ -166,24 +167,24 @@ La rama ya fue creada por Claude Code — el bloque empieza directo en los commi
 ═══════════════════════════════════════════════════════════
 
 # Commits por archivo (ejecutar en orden)
-git add backend/src/main/java/com/gamelist/model/Models.java
-git commit -m "feat: agregar entidad Videojuego con JPA - closes #1"
+git add backend/src/main/java/com/example/api_skincare/model/Categoria.java
+git commit -m "feat: agregar entidad Categoria con JPA - closes #2"
 
-git add backend/src/main/java/com/gamelist/repository/Repositories.java
-git commit -m "feat: agregar VideojuegoRepository con búsqueda parcial - closes #1"
+git add backend/src/main/java/com/example/api_skincare/repository/CategoriaRepository.java
+git commit -m "feat: agregar CategoriaRepository con búsqueda parcial - closes #2"
 
-git add backend/src/main/java/com/gamelist/controller/Controllers.java
-git commit -m "feat: implementar CRUD completo /api/videojuegos - closes #1"
+git add backend/src/main/java/com/example/api_skincare/controller/CategoriaController.java
+git commit -m "feat: implementar CRUD completo /api/categorias - closes #2"
 
-# 4. Subir la rama
-git push origin feature/sprint1-backend-videojuegos
+# Subir la rama
+git push origin feature/sprint1-backend-categorias
 
 ═══════════════════════════════════════════════════════════
 📌 PR DESDE VS CODE (extensión GitHub Pull Requests):
    Base:    development
-   Compare: feature/sprint1-backend-videojuegos
-   Título:  [Sprint 1] feat: CRUD completo de videojuegos
-   Body:    closes #1
+   Compare: feature/sprint1-backend-categorias
+   Título:  [Sprint 1] feat: CRUD completo de categorías
+   Body:    closes #2
 ═══════════════════════════════════════════════════════════
 ```
 
@@ -195,34 +196,32 @@ Nunca un solo `git add .` para toda la historia.
 ## Stack técnico detallado
 
 ### Backend (Spring Boot)
-- **Java 21**, Spring Boot 3.2.5
+- **Java 21**, Spring Boot 3.2
 - **JPA/Hibernate** para persistencia
 - **Bean Validation** (`@NotBlank`, `@Min`, `@Max`, etc.)
-- **SpringDoc OpenAPI 2.5** para Swagger (NO springfox)
+- **SpringDoc OpenAPI** para Swagger (NO springfox)
 - **Fix HTTPS:** `server.forward-headers-strategy=framework` en application.properties
-- **CORS:** configurado en `AppConfig.java` con `allowedOrigins("*")`
+- **CORS:** `@CrossOrigin("*")` en cada controlador
+- **Package base:** `com.example.api_skincare`
 
 ### Base de datos
 - **PostgreSQL 15** en Cloud SQL
 - Conexión via **Cloud SQL Socket Factory** (no TCP directo)
-- 5 tablas: `categoria`, `plataforma`, `videojuego`, `resena`, `wishlist`
-- Variables de entorno: `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `INSTANCE_CONNECTION_NAME`
+- Tablas principales: `categoria`, `producto`
+- Variables de entorno: `DB_USER`, `DB_PASSWORD`, `INSTANCE_CONNECTION_NAME`, `PORT`
 
 ### Endpoints que debo implementar
 ```
 /api/categorias                    → CRUD completo
-/api/plataformas                   → CRUD completo
-/api/videojuegos                   → CRUD + ?titulo= ?estado= ?categoriaId= ?plataformaId=
-/api/videojuegos/{id}/categoria    → relación
-/api/videojuegos/{id}/resenas      → relación
-/api/videojuegos/estadisticas      → conteo por estado
-/api/resenas                       → CRUD + GET por videojuego
-/api/wishlist                      → CRUD + ?prioridad= ?titulo=
+/api/categorias/{id}               → GET por id, PUT, DELETE
+/api/productos                     → CRUD + ?categoriaId=
+/api/productos/{id}                → GET por id con tiposPiel formateados
+/api/productos/{id}/categoria      → relación categoría del producto
 ```
 
 ### Regla de búsqueda
-- Usar `findByTituloContainingIgnoreCase()` en el repositorio
-- Búsqueda parcial: buscar "wit" debe encontrar "The Witcher 3"
+- Usar `findByNombreContainingIgnoreCase()` en el repositorio
+- Búsqueda parcial: buscar "Ceta" debe encontrar "Cetaphil"
 
 ---
 
@@ -240,12 +239,13 @@ Claude Code verifica mentalmente antes de dar los comandos:
 ## Contexto de despliegue GCP
 
 ```yaml
-Proyecto GCP:    game-list-cloud
+Proyecto GCP:    glowlab-cloud
 Región:          us-central1
-Servicio:        game-list-app (Cloud Run)
-Instancia SQL:   game-list-cloud:us-central1:gamelist-db
-Base de datos:   gamelist
-Registry:        us-central1-docker.pkg.dev/game-list-cloud/...
+Servicio:        glowlab-app (Cloud Run)
+Instancia SQL:   glowlab-cloud:us-central1:glowlab-db
+Base de datos:   skincare
+Registry:        us-central1-docker.pkg.dev/glowlab-cloud/...
+Frontend:        Firebase Hosting
 ```
 
 El deploy automático ocurre al hacer merge a `main` via GitHub Actions → Cloud Build.
