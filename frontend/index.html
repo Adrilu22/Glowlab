@@ -449,11 +449,31 @@
     font-size: 10px;
     padding: 3px 10px;
     border-radius: 20px;
-    background: rgba(122,158,138,0.1);
-    color: var(--sage-dark);
     font-weight: 400;
-    border: 1px solid rgba(122,158,138,0.2);
+    border: 1px solid;
   }
+  .skin-tag-grasa    { background: rgba(99,165,224,0.1);  color: #1a5f9e; border-color: rgba(99,165,224,0.3); }
+  .skin-tag-seca     { background: rgba(222,159,98,0.1);  color: #8a5a1a; border-color: rgba(222,159,98,0.3); }
+  .skin-tag-mixta    { background: rgba(122,158,138,0.1); color: var(--sage-dark); border-color: rgba(122,158,138,0.2); }
+  .skin-tag-sensible { background: rgba(196,114,106,0.08);color: var(--rose-dark); border-color: rgba(196,114,106,0.2); }
+  .skin-tag-normal   { background: rgba(155,115,190,0.1); color: #5a2d8a; border-color: rgba(155,115,190,0.3); }
+  .skin-tag-default  { background: rgba(40,33,30,0.06);   color: var(--mid); border-color: var(--border); }
+
+  /* Checkboxes de tipos de piel en el modal */
+  .skin-checks { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 0; }
+  .skin-check {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--mid);
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .skin-check input[type="checkbox"] { display: none; }
+  .skin-check.checked { background: var(--charcoal); color: #fff; border-color: var(--charcoal); }
   .product-footer {
     display: flex; align-items: center; justify-content: space-between;
     padding: 14px 20px;
@@ -1048,8 +1068,14 @@
       <input type="text" id="product-desc-input" placeholder="Breve descripción del producto">
     </div>
     <div class="form-field">
-      <label>Tipos de piel (separados por comas)</label>
-      <input type="text" id="product-skin-input" placeholder="grasa, mixta, sensible">
+      <label>Tipos de piel compatibles</label>
+      <div class="skin-checks" id="skin-checks-group">
+        <label class="skin-check"><input type="checkbox" value="grasa"    onchange="this.parentElement.classList.toggle('checked',this.checked)"> Grasa</label>
+        <label class="skin-check"><input type="checkbox" value="seca"     onchange="this.parentElement.classList.toggle('checked',this.checked)"> Seca</label>
+        <label class="skin-check"><input type="checkbox" value="mixta"    onchange="this.parentElement.classList.toggle('checked',this.checked)"> Mixta</label>
+        <label class="skin-check"><input type="checkbox" value="sensible" onchange="this.parentElement.classList.toggle('checked',this.checked)"> Sensible</label>
+        <label class="skin-check"><input type="checkbox" value="normal"   onchange="this.parentElement.classList.toggle('checked',this.checked)"> Normal</label>
+      </div>
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal('modal-product')">Cancelar</button>
@@ -1240,8 +1266,11 @@ function updateStats() {
 // ── PRODUCTS ──
 function renderCatFilters() {
   const f = document.getElementById('product-filters');
-  f.innerHTML = `<button class="filter-chip active" onclick="filterByCat('all', this)">Todos</button>` +
-    categories.map(c => `<button class="filter-chip" onclick="filterByCat(${c.id}, this)">${c.icon} ${c.name}</button>`).join('');
+  f.innerHTML = `<button class="filter-chip active" onclick="filterByCat('all', this)">Todos (${products.length})</button>` +
+    categories.map(c => {
+      const count = products.filter(p => p.catId === c.id).length;
+      return `<button class="filter-chip" onclick="filterByCat(${c.id}, this)">${c.icon} ${c.name} (${count})</button>`;
+    }).join('');
 }
 function filterByCat(catId, btn) {
   activeCatFilter = catId;
@@ -1277,7 +1306,7 @@ function renderProducts() {
         <div class="product-name">${p.name}</div>
         <div class="product-brand">${p.brand}</div>
         <div class="product-desc">${p.desc}</div>
-        <div class="product-skin-tags">${p.skins.map(s=>`<span class="skin-tag">${s}</span>`).join('')}</div>
+        <div class="product-skin-tags">${p.skins.map(s=>`<span class="skin-tag skin-tag-${['grasa','seca','mixta','sensible','normal'].includes(s)?s:'default'}">${s}</span>`).join('')}</div>
       </div>
       <div class="product-footer">
         <div class="product-price">$${(p.price/1000).toFixed(0)}k</div>
@@ -1301,10 +1330,14 @@ function openProductModal(id) {
     document.getElementById('product-cat-input').value = p.catId;
     document.getElementById('product-price-input').value = p.price;
     document.getElementById('product-desc-input').value = p.desc;
-    document.getElementById('product-skin-input').value = p.skins.join(', ');
+    document.querySelectorAll('#skin-checks-group input').forEach(cb => {
+      cb.checked = p.skins.includes(cb.value);
+      cb.parentElement.classList.toggle('checked', cb.checked);
+    });
   } else {
     document.getElementById('modal-product-title').textContent = 'Nuevo producto';
-    ['product-name-input','product-brand-input','product-price-input','product-desc-input','product-skin-input'].forEach(f => document.getElementById(f).value='');
+    ['product-name-input','product-brand-input','product-price-input','product-desc-input'].forEach(f => document.getElementById(f).value='');
+    document.querySelectorAll('#skin-checks-group input').forEach(cb => { cb.checked = false; cb.parentElement.classList.remove('checked'); });
     sel.value = '';
   }
   modal.classList.add('open');
@@ -1316,7 +1349,7 @@ function saveProduct() {
   const catId = parseInt(document.getElementById('product-cat-input').value);
   const price = parseInt(document.getElementById('product-price-input').value);
   const desc = document.getElementById('product-desc-input').value.trim();
-  const skins = document.getElementById('product-skin-input').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const skins = Array.from(document.querySelectorAll('#skin-checks-group input:checked')).map(cb => cb.value);
   if (!name || !brand || !catId || !price) { showToast('Completa los campos obligatorios', 'error'); return; }
   const emojis = ['🧴','💧','✨','🌿','🍋','⚗️','🫙','☀️','🌹','💎','🫧'];
   if (editingProductId) {
