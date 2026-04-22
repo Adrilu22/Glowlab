@@ -1,0 +1,12 @@
+C:\Users\adria\Downloads\API-de-Skincare\backend\src\main\java\com\example\api_skincare\Application.java
+C:\Users\adria\Downloads\API-de-Skincare\backend\src\main\java\com\example\api_skincare\controller\CategoriaController.java
+C:\Users\adria\Downloads\API-de-Skincare\backend\src\main\java\com\example\api_skincare\controller\CompraController.java
+C:\Users\adria\Downloads\API-de-Skincare\backend\src\main\java\com\example\api_skincare\controller\ProductoController.java
+C:\Users\adria\Downloads\API-de-Skincare\backend\src\main\java\com\example\api_skincare\model\Categoria.java
+C:\Users\adria\Downloads\API-de-Skincare\backend\src\main\java\com\example\api_skincare\model\Compra.java
+C:\Users\adria\Downloads\API-de-Skincare\backend\src\main\java\com\example\api_skincare\model\DetalleCompra.java
+C:\Users\adria\Downloads\API-de-Skincare\backend\src\main\java\com\example\api_skincare\model\Producto.java
+C:\Users\adria\Downloads\API-de-Skincare\backend\src\main\java\com\example\api_skincare\repository\CategoriaRepository.java
+C:\Users\adria\Downloads\API-de-Skincare\backend\src\main\java\com\example\api_skincare\repository\CompraRepository.java
+C:\Users\adria\Downloads\API-de-Skincare\backend\src\main\java\com\example\api_skincare\repository\DetalleCompraRepository.java
+C:\Users\adria\Downloads\API-de-Skincare\backend\src\main\java\com\example\api_skincare\repository\ProductoRepository.java
