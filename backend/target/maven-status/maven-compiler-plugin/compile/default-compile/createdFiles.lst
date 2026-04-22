@@ -1,0 +1,12 @@
+com\example\api_skincare\repository\DetalleCompraRepository.class
+com\example\api_skincare\model\Categoria.class
+com\example\api_skincare\repository\CategoriaRepository.class
+com\example\api_skincare\Application.class
+com\example\api_skincare\controller\CategoriaController.class
+com\example\api_skincare\model\Producto.class
+com\example\api_skincare\controller\CompraController.class
+com\example\api_skincare\repository\CompraRepository.class
+com\example\api_skincare\repository\ProductoRepository.class
+com\example\api_skincare\model\Compra.class
+com\example\api_skincare\controller\ProductoController.class
+com\example\api_skincare\model\DetalleCompra.class
