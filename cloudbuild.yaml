@@ -4,7 +4,7 @@ steps:
     args: ['clean', 'package', '-DskipTests']
     dir: 'backend'
 
-  # ── 2. Construir imagen Docker ─────────────────────────────────
+  # ── 2. Construir imagen Docker (contexto = raíz del proyecto) ──
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
@@ -14,7 +14,7 @@ steps:
       - 'us-central1-docker.pkg.dev/api-de-skincare/cloud-run-source-deploy/skincare-api:latest'
       - '-f'
       - 'backend/Dockerfile'
-      - './backend'
+      - '.'
 
   # ── 3. Subir imagen a Artifact Registry ───────────────────────
   - name: 'gcr.io/cloud-builders/docker'
@@ -37,25 +37,6 @@ steps:
       - '--cpu=2'
       - '--memory=2Gi'
       - '--quiet'
-
-  # ── 5. Desplegar frontend en Firebase Hosting ─────────────────
-  - name: 'node:20-slim'
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - |
-        npm install -g firebase-tools --quiet
-        firebase deploy --only hosting \
-          --project api-de-skincare-22722 \
-          --token $$FIREBASE_TOKEN \
-          --non-interactive
-    dir: 'frontend'
-    secretEnv: ['FIREBASE_TOKEN']
-
-availableSecrets:
-  secretManager:
-    - versionName: projects/api-de-skincare/secrets/firebase-token/versions/latest
-      env: 'FIREBASE_TOKEN'
 
 images:
   - 'us-central1-docker.pkg.dev/api-de-skincare/cloud-run-source-deploy/skincare-api:$COMMIT_SHA'
