@@ -41,3 +41,6 @@ steps:
 images:
   - 'us-central1-docker.pkg.dev/api-de-skincare/cloud-run-source-deploy/skincare-api:$COMMIT_SHA'
   - 'us-central1-docker.pkg.dev/api-de-skincare/cloud-run-source-deploy/skincare-api:latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
