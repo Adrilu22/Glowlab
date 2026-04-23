@@ -2152,52 +2152,27 @@ function renderCartModal() {
 async function checkoutCart() {
   if (!cart.length) { showToast('Tu carrito está vacío', 'error'); return; }
   const userName = currentUser.name;
+  const payload = cart.map(item => ({ productoId: item.product.id }));
+  const purchase = {
+    id: Date.now(),
+    fecha: new Date().toLocaleDateString('es-CO', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }),
+    items: [...cart],
+    total: cart.reduce((s, i) => s + (i.product.price || 0), 0)
+  };
   try {
-    const compraRes = await fetch(`${API_BASE}/api/compras`, {
+    await fetch(`${API_BASE}/api/compras`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({})
+      body: JSON.stringify(payload)
     });
-    let compraId = null;
-    if (compraRes.ok) {
-      const compraData = await compraRes.json();
-      compraId = compraData.id;
-      await Promise.all(cart.map(item =>
-        fetch(`${API_BASE}/api/detalle-compra`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ compra: { id: compraId }, producto: { id: item.product.id } })
-        })
-      ));
-    }
-    const purchase = {
-      id: compraId || Date.now(),
-      fecha: new Date().toLocaleDateString('es-CO', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }),
-      items: [...cart],
-      total: cart.reduce((s, i) => s + (i.product.price || 0), 0)
-    };
-    userPurchases.unshift(purchase);
-    registerPurchaseForAdmin(purchase, userName);
-    cart = [];
-    updateCartBadge();
-    closeModal('modal-cart');
-    renderPurchases();
-    showToast('¡Compra realizada exitosamente! 🎉', 'success');
-  } catch {
-    const purchase = {
-      id: Date.now(),
-      fecha: new Date().toLocaleDateString('es-CO', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }),
-      items: [...cart],
-      total: cart.reduce((s, i) => s + (i.product.price || 0), 0)
-    };
-    userPurchases.unshift(purchase);
-    registerPurchaseForAdmin(purchase, userName);
-    cart = [];
-    updateCartBadge();
-    closeModal('modal-cart');
-    renderPurchases();
-    showToast('¡Compra realizada exitosamente! 🎉', 'success');
-  }
+  } catch { /* si la API falla, igual registramos localmente */ }
+  userPurchases.unshift(purchase);
+  registerPurchaseForAdmin(purchase, userName);
+  cart = [];
+  updateCartBadge();
+  closeModal('modal-cart');
+  renderPurchases();
+  showToast('¡Compra realizada exitosamente! 🎉', 'success');
 }
 
 let userPurchases = [];
