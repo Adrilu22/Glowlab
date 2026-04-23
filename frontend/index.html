@@ -1477,15 +1477,22 @@ function doLogin() {
   loginAs(user);
 }
 
-function doRegister() {
+async function doRegister() {
   const name = document.getElementById('reg-name').value.trim();
   const email = document.getElementById('reg-email').value.trim();
   const pass = document.getElementById('reg-password').value;
   if (!name || !email || !pass) { showToast('Completa todos los campos', 'error'); return; }
   if (pass.length < 6) { showToast('Contraseña mínimo 6 caracteres', 'error'); return; }
   const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-  const newUser = { id: USERS.length+1, name, email, password: pass, role: 'user', initials };
+  const newUser = { id: USERS.length+1, name, email, password: pass, role: selectedRole, initials };
   USERS.push(newUser);
+  try {
+    await fetch(`${API_BASE}/api/usuarios`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nombre: name, email, passwordHash: pass, rol: selectedRole.toUpperCase() })
+    });
+  } catch { /* si falla la API el usuario igual puede usar la app */ }
   loginAs(newUser);
 }
 
@@ -1772,7 +1779,7 @@ function toggleConcern(btn) {
   else selectedConcerns.push(c);
 }
 
-function generateRoutine() {
+async function generateRoutine() {
   if (!selectedSkinType) { showToast('Selecciona tu tipo de piel', 'error'); return; }
 
   // 1. Filtra por tiposPiel compatible con la selección del usuario
@@ -1835,14 +1842,27 @@ function generateRoutine() {
 
   // 4. Guarda siempre en el historial con timestamp
   const routineName = `Rutina ${selectedSkinType.charAt(0).toUpperCase()+selectedSkinType.slice(1)}`;
-  savedRoutines.unshift({
+  const nuevaRutina = {
     id: Date.now(),
     name: routineName,
     skin: selectedSkinType,
     concerns: [...selectedConcerns],
     steps: routineSteps,
     createdAt: new Date().toLocaleDateString('es-CO', { day:'numeric', month:'short', year:'numeric' })
-  });
+  };
+  savedRoutines.unshift(nuevaRutina);
+  try {
+    await fetch(`${API_BASE}/api/rutinas`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nombre: routineName,
+        tipoPiel: selectedSkinType,
+        preocupaciones: selectedConcerns.join(','),
+        pasosJson: JSON.stringify(routineSteps.filter(s => s.product).map(s => ({ paso: s.name, producto: s.product.name, marca: s.product.brand })))
+      })
+    });
+  } catch { /* si falla la API la rutina igual queda en memoria */ }
   renderSavedRoutines();
   updateStats();
   showToast('Rutina generada exitosamente 🌿', 'success');
