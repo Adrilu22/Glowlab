@@ -81,20 +81,39 @@
   }
   .auth-panel-left h1 {
     font-family: var(--font-display);
-    font-size: 56px;
+    font-size: 72px;
     font-weight: 300;
     color: #FFF;
-    line-height: 1.05;
-    letter-spacing: -1px;
+    line-height: 1.0;
+    letter-spacing: -2px;
     position: relative; z-index: 1;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.15);
   }
-  .auth-panel-left p {
-    color: rgba(255,255,255,0.7);
-    font-size: 14px;
-    margin-top: 12px;
+  .auth-panel-left h1 em {
+    font-style: italic;
+    font-size: 80px;
+    display: block;
+    color: rgba(255,255,255,0.92);
+  }
+  .auth-panel-left .auth-slogan {
+    color: rgba(255,255,255,0.9);
+    font-size: 15px;
+    margin-top: 16px;
     position: relative; z-index: 1;
     font-weight: 300;
-    letter-spacing: 0.3px;
+    letter-spacing: 0.8px;
+    line-height: 1.6;
+    border-left: 2px solid rgba(255,255,255,0.4);
+    padding-left: 14px;
+  }
+  .auth-panel-left .auth-tagline {
+    color: rgba(255,255,255,0.55);
+    font-size: 11px;
+    margin-top: 10px;
+    position: relative; z-index: 1;
+    font-weight: 400;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
   }
   .auth-dots {
     display: flex; gap: 6px; margin-top: 32px;
@@ -207,16 +226,6 @@
   .btn-primary:hover { background: var(--rose-dark); }
   .btn-primary:active { transform: scale(0.99); }
 
-  .demo-creds {
-    margin-top: 20px;
-    padding: 12px 14px;
-    background: rgba(122,158,138,0.08);
-    border: 1px solid rgba(122,158,138,0.2);
-    border-radius: 10px;
-    font-size: 12px;
-    color: var(--sage-dark);
-  }
-  .demo-creds strong { display: block; margin-bottom: 4px; font-size: 11px; letter-spacing: 0.8px; text-transform: uppercase; }
 
   /* ── MAIN APP ── */
   #app { display: none; }
@@ -843,6 +852,89 @@
   /* ── ROUTINE STEP ENHANCED ── */
   .step-price { font-size: 11px; color: var(--rose); font-weight: 500; margin-top: 3px; }
   .step-skin-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+
+  /* ── USER MANAGEMENT ── */
+  .users-table { width: 100%; border-collapse: collapse; }
+  .users-table th {
+    text-align: left; font-size: 11px; font-weight: 500;
+    letter-spacing: 1px; text-transform: uppercase; color: var(--light);
+    padding: 10px 16px; border-bottom: 1px solid var(--border);
+  }
+  .users-table td {
+    padding: 14px 16px; border-bottom: 1px solid var(--border);
+    font-size: 14px; color: var(--charcoal);
+    vertical-align: middle;
+  }
+  .users-table tr:last-child td { border-bottom: none; }
+  .users-table tr:hover td { background: rgba(40,33,30,0.02); }
+  .role-pill {
+    display: inline-block; padding: 3px 12px; border-radius: 20px;
+    font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .role-pill.admin { background: rgba(196,114,106,0.12); color: var(--rose-dark); }
+  .role-pill.user  { background: rgba(107,158,136,0.12); color: var(--sage-dark); }
+  .table-wrap {
+    background: var(--warm-white); border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden;
+  }
+
+  /* ── CART & PURCHASE ── */
+  .cart-fab {
+    position: fixed; bottom: 28px; left: 28px; z-index: 900;
+    display: none;
+    align-items: center; gap: 8px;
+    padding: 13px 22px;
+    background: var(--charcoal);
+    color: #fff;
+    border: none; border-radius: 100px;
+    font-family: var(--font-body); font-size: 14px; font-weight: 500;
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    transition: background 0.2s, transform 0.15s;
+  }
+  .cart-fab:hover { background: var(--rose-dark); transform: scale(1.03); }
+  .cart-badge {
+    background: var(--rose); color: #fff;
+    width: 20px; height: 20px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+  }
+  .cart-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 0; border-bottom: 1px solid var(--border);
+    gap: 12px;
+  }
+  .cart-item:last-child { border-bottom: none; }
+  .cart-item-info { flex: 1; }
+  .cart-item-name { font-size: 14px; font-weight: 500; color: var(--charcoal); }
+  .cart-item-brand { font-size: 11px; color: var(--light); font-weight: 300; }
+  .cart-item-price { font-family: var(--font-display); font-size: 18px; color: var(--charcoal); white-space: nowrap; }
+  .btn-remove-cart {
+    padding: 4px 10px; border: 1px solid rgba(196,114,106,0.3);
+    border-radius: 6px; background: transparent; font-size: 11px;
+    color: var(--rose); cursor: pointer; font-family: var(--font-body);
+    transition: all 0.15s;
+  }
+  .btn-remove-cart:hover { background: rgba(196,114,106,0.06); }
+  .cart-total {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 20px; padding-top: 16px; border-top: 2px solid var(--border);
+  }
+  .cart-total-label { font-size: 13px; font-weight: 500; color: var(--mid); letter-spacing: 0.5px; text-transform: uppercase; }
+  .cart-total-amount { font-family: var(--font-display); font-size: 28px; color: var(--charcoal); }
+  .purchase-card {
+    background: var(--warm-white); border: 1px solid var(--border);
+    border-radius: 16px; padding: 24px; margin-bottom: 16px;
+  }
+  .purchase-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  .purchase-id { font-size: 11px; color: var(--light); font-weight: 400; letter-spacing: 0.5px; }
+  .purchase-date { font-family: var(--font-display); font-size: 18px; color: var(--charcoal); }
+  .purchase-items { font-size: 13px; color: var(--mid); line-height: 1.8; }
+  .purchase-total-tag {
+    display: inline-block; margin-top: 10px;
+    font-family: var(--font-display); font-size: 20px; color: var(--rose-dark);
+  }
+  .modal-cart { width: 520px; max-height: 80vh; overflow-y: auto; }
 </style>
 </head>
 <body>
@@ -851,8 +943,9 @@
 <div id="auth-overlay">
   <div class="auth-split">
     <div class="auth-panel-left">
-      <h1>Glow<br><em>Lab</em></h1>
-      <p>Skincare Intelligence Platform</p>
+      <h1>Glow<em>Lab</em></h1>
+      <p class="auth-slogan">Tu piel merece inteligencia.<br>Rutinas a medida, ciencia real.</p>
+      <p class="auth-tagline">Skincare Intelligence Platform</p>
       <div class="auth-dots">
         <span class="active"></span><span></span><span></span>
       </div>
@@ -869,18 +962,13 @@
         <div class="auth-hint">Ingresa tus credenciales para continuar</div>
         <div class="form-field">
           <label>Correo electrónico</label>
-          <input type="email" id="login-email" placeholder="tu@correo.com" value="admin@glowlab.co">
+          <input type="email" id="login-email" placeholder="tu@correo.com">
         </div>
         <div class="form-field">
           <label>Contraseña</label>
-          <input type="password" id="login-password" placeholder="••••••••" value="admin123">
+          <input type="password" id="login-password" placeholder="••••••••">
         </div>
         <button class="btn-primary" onclick="doLogin()">Ingresar a GlowLab</button>
-        <div class="demo-creds">
-          <strong>Cuentas de demostración</strong>
-          Admin: admin@glowlab.co / admin123<br>
-          Usuario: user@glowlab.co / user123
-        </div>
       </div>
 
       <!-- REGISTER FORM -->
@@ -899,19 +987,6 @@
           <label>Contraseña</label>
           <input type="password" id="reg-password" placeholder="Mínimo 6 caracteres">
         </div>
-        <div style="font-size:11px; font-weight:500; letter-spacing:1.2px; text-transform:uppercase; color:var(--mid); margin-bottom:8px;">Tipo de cuenta</div>
-        <div class="role-selector">
-          <button class="role-btn selected" id="role-user" onclick="selectRole('user')">
-            <span class="role-icon">🌿</span>
-            <div class="role-name">Usuario</div>
-            <div class="role-desc">Gestiona tu rutina</div>
-          </button>
-          <button class="role-btn" id="role-admin" onclick="selectRole('admin')">
-            <span class="role-icon">⚙️</span>
-            <div class="role-name">Administrador</div>
-            <div class="role-desc">Gestiona catálogo</div>
-          </button>
-        </div>
         <button class="btn-primary" onclick="doRegister()">Crear cuenta</button>
       </div>
     </div>
@@ -926,10 +1001,11 @@
       <!-- injected by JS based on role -->
     </div>
     <div class="nav-right">
-      <div class="user-badge" id="user-badge">
+      <div class="user-badge" id="user-badge" onclick="openOwnProfileModal()" title="Editar mi perfil" style="cursor:pointer;">
         <div class="user-avatar" id="nav-avatar">GL</div>
         <span class="user-name" id="nav-username">Usuario</span>
         <span class="user-role" id="nav-role-badge">user</span>
+        <span style="font-size:11px;color:var(--light);margin-left:2px;">✏️</span>
       </div>
       <button class="btn-logout" onclick="doLogout()">Salir</button>
     </div>
@@ -988,6 +1064,61 @@
         Área de administración — Solo administradores pueden crear, editar y eliminar categorías.
       </div>
       <div class="categories-grid" id="categories-grid"></div>
+    </div>
+  </section>
+
+  <!-- SECTION: Usuarios (Admin only) -->
+  <section class="section" id="section-usuarios">
+    <div class="content-area">
+      <div class="section-header">
+        <div class="section-title"><em>Usuarios</em> del sistema</div>
+        <button class="btn-add" onclick="openUserModal()">Agregar usuario</button>
+      </div>
+      <div class="admin-notice">
+        <span class="icon">🛡️</span>
+        Solo administradores pueden crear, editar y cambiar roles de usuarios.
+      </div>
+      <div class="table-wrap">
+        <table class="users-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Correo</th>
+              <th>Rol</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="users-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION: Todas las Compras (Admin only) -->
+  <section class="section" id="section-todas-compras">
+    <div class="content-area">
+      <div class="section-header">
+        <div class="section-title">Compras de <em>usuarios</em></div>
+      </div>
+      <div class="admin-notice">
+        <span class="icon">🛍️</span>
+        Historial de todas las compras realizadas por los usuarios del sistema.
+      </div>
+      <div id="all-purchases-list">
+        <div class="empty-state"><div class="empty-icon">🛍️</div><p>Aún no hay compras registradas en el sistema.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION: Mis Compras (solo usuarios) -->
+  <section class="section" id="section-compras">
+    <div class="content-area">
+      <div class="section-header">
+        <div class="section-title">Mis <em>compras</em></div>
+      </div>
+      <div id="purchase-list">
+        <div class="empty-state"><div class="empty-icon">🛍️</div><p>Aún no tienes compras registradas.</p></div>
+      </div>
     </div>
   </section>
 
@@ -1063,6 +1194,66 @@
     <div class="footer-brand">Glow<em>Lab</em> — Skincare Intelligence</div>
     <div>Los Libertadores · Desarrollo en la Nube · 2024</div>
   </footer>
+</div>
+
+<!-- CART FAB (solo usuarios) -->
+<button class="cart-fab" id="cart-fab" onclick="openCartModal()">
+  🛒 Mi carrito <span class="cart-badge" id="cart-count">0</span>
+</button>
+
+<!-- MODAL USER -->
+<div class="modal-overlay" id="modal-user">
+  <div class="modal">
+    <h3 id="modal-user-title">Nuevo usuario</h3>
+    <div class="modal-sub">Completa los datos del usuario</div>
+    <input type="hidden" id="edit-user-id">
+    <div class="form-field">
+      <label>Nombre completo</label>
+      <input type="text" id="user-name-input" placeholder="ej. Laura Gómez">
+    </div>
+    <div class="form-field">
+      <label>Correo electrónico</label>
+      <input type="email" id="user-email-input" placeholder="laura@correo.com">
+    </div>
+    <div class="form-field" id="user-pass-field">
+      <label>Contraseña</label>
+      <input type="password" id="user-password-input" placeholder="Mínimo 6 caracteres">
+    </div>
+    <div style="font-size:11px;font-weight:500;letter-spacing:1.2px;text-transform:uppercase;color:var(--mid);margin-bottom:8px;">Rol</div>
+    <div class="role-selector">
+      <button class="role-btn selected" id="modal-role-user" onclick="selectUserModalRole('user')">
+        <span class="role-icon">🌿</span>
+        <div class="role-name">Usuario</div>
+        <div class="role-desc">Gestiona su rutina</div>
+      </button>
+      <button class="role-btn" id="modal-role-admin" onclick="selectUserModalRole('admin')">
+        <span class="role-icon">⚙️</span>
+        <div class="role-name">Administrador</div>
+        <div class="role-desc">Gestiona catálogo</div>
+      </button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-user')">Cancelar</button>
+      <button class="btn-save" onclick="saveUser()">Guardar usuario</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CART -->
+<div class="modal-overlay" id="modal-cart">
+  <div class="modal modal-cart">
+    <h3>🛒 Mi carrito</h3>
+    <div class="modal-sub">Revisa los productos antes de confirmar</div>
+    <div id="cart-items-list"></div>
+    <div class="cart-total">
+      <span class="cart-total-label">Total</span>
+      <span class="cart-total-amount" id="cart-total-amount">$0</span>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-cart')">Seguir comprando</button>
+      <button class="btn-save" onclick="checkoutCart()">Confirmar compra ✓</button>
+    </div>
+  </div>
 </div>
 
 <!-- MODAL PRODUCT -->
@@ -1209,14 +1400,45 @@ async function fetchProductsFromAPI() {
   return (await res.json()).map(mapProducto);
 }
 
+const SEED_CATEGORIES = [
+  { id: 1, name: 'Limpiadores',      desc: 'Geles, espumas y aceites limpiadores', icon: '🫧' },
+  { id: 2, name: 'Sérums',           desc: 'Tratamientos concentrados activos',     icon: '💧' },
+  { id: 3, name: 'Hidratantes',      desc: 'Cremas y lociones moisturizantes',      icon: '🫙' },
+  { id: 4, name: 'Protectores Solares', desc: 'SPF para todo tipo de piel',         icon: '☀️' },
+  { id: 5, name: 'Tónicos',          desc: 'Equilibran y preparan la piel',         icon: '🌹' },
+  { id: 6, name: 'Exfoliantes',      desc: 'AHA, BHA y exfoliación física',        icon: '🌿' },
+];
+
+const SEED_PRODUCTS = [
+  { id:1,  catId:1, name:'Gel Limpiador Purificante',       brand:'CeraVe',        price:45000,  desc:'Limpieza suave con ceramidas y niacinamida. Sin jabón.',           skins:['grasa','mixta','normal'],          emoji:'🫧' },
+  { id:2,  catId:1, name:'Aceite Limpiador Doble',          brand:'Heimish',       price:68000,  desc:'Elimina maquillaje y SPF sin resecar. Método coreano.',            skins:['seca','sensible','normal'],        emoji:'🫧' },
+  { id:3,  catId:2, name:'Sérum Vitamina C 20%',            brand:'The Ordinary',  price:52000,  desc:'Ilumina el tono, reduce manchas y aporta antioxidantes.',          skins:['normal','mixta','seca'],           emoji:'🍋' },
+  { id:4,  catId:2, name:'Sérum Niacinamida 10% + Zinc',    brand:'The Ordinary',  price:38000,  desc:'Reduce poros dilatados, controla el sebo y unifica el tono.',     skins:['grasa','mixta'],                   emoji:'⚗️' },
+  { id:5,  catId:2, name:'Sérum Retinol 0.5%',              brand:'Paula\'s Choice',price:185000, desc:'Anti-aging de noche. Estimula colágeno y renueva la piel.',       skins:['normal','seca','mixta'],           emoji:'🌙' },
+  { id:6,  catId:2, name:'Sérum Hialurónico',               brand:'Neutrogena',    price:62000,  desc:'Hidratación profunda con ácido hialurónico de triple peso.',       skins:['seca','sensible','normal','mixta'],emoji:'💎' },
+  { id:7,  catId:3, name:'Crema Hidratante Barrier Repair', brand:'CeraVe',        price:78000,  desc:'Restaura la barrera cutánea con ceramidas. Sin fragancia.',        skins:['seca','sensible','normal'],        emoji:'🫙' },
+  { id:8,  catId:3, name:'Gel-Crema Oil Free',              brand:'Neutrogena',    price:55000,  desc:'Hidratación ligera sin obstruir poros. Ideal para pieles grasas.',  skins:['grasa','mixta'],                   emoji:'🫙' },
+  { id:9,  catId:4, name:'Protector Solar SPF 50+ Fluido',  brand:'Isdin',         price:142000, desc:'Textura ultraligera, acabado mate y protección UVA/UVB.',          skins:['grasa','mixta','normal'],          emoji:'☀️' },
+  { id:10, catId:4, name:'Sunscreen SPF 30 Tintado',        brand:'Aveeno',        price:89000,  desc:'Protección con color unificador. Mineral y apto para sensible.',   skins:['sensible','normal','seca'],        emoji:'☀️' },
+  { id:11, catId:5, name:'Tónico Ácido Glicólico 7%',       brand:'The Ordinary',  price:41000,  desc:'Exfolia suavemente, afina textura y mejora luminosidad.',          skins:['normal','mixta','grasa'],          emoji:'🌹' },
+  { id:12, catId:5, name:'Tónico Calmante Centella',        brand:'Some By Mi',    price:58000,  desc:'Calma rojeces, hidrata y fortalece pieles reactivas.',             skins:['sensible','seca'],                 emoji:'🌹' },
+  { id:13, catId:6, name:'Exfoliante BHA 2%',               brand:'Paula\'s Choice',price:125000, desc:'Desobstruye poros en profundidad y suaviza la textura.',           skins:['grasa','mixta'],                   emoji:'🌿' },
+  { id:14, catId:6, name:'Mascarilla Exfoliante AHA',       brand:'Drunk Elephant',price:210000, desc:'Mezcla de AHA al 25% para renovación celular intensa (1x semana).', skins:['normal','seca','mixta'],           emoji:'🌿' },
+];
+
 async function loadDataFromAPI() {
   try {
     [categories, products] = await Promise.all([
       fetchCategoriesFromAPI(),
       fetchProductsFromAPI()
     ]);
+    // Si la API devuelve vacío, usar datos semilla
+    if (!categories.length) categories = SEED_CATEGORIES;
+    if (!products.length)   products   = SEED_PRODUCTS;
   } catch {
-    showToast('Sin conexión con la API — mostrando vista vacía.', 'error');
+    // Sin conexión: usar datos semilla
+    categories = SEED_CATEGORIES;
+    products   = SEED_PRODUCTS;
   }
 }
 
@@ -1230,6 +1452,7 @@ let editingProductId = null;
 let editingCatId = null;
 let nextProdId = 11;
 let nextCatId = 7;
+let cart = []; // { product, source: 'product'|'routine', routineName? }
 
 // ── AUTH ──
 function switchAuthTab(tab) {
@@ -1261,7 +1484,7 @@ function doRegister() {
   if (!name || !email || !pass) { showToast('Completa todos los campos', 'error'); return; }
   if (pass.length < 6) { showToast('Contraseña mínimo 6 caracteres', 'error'); return; }
   const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-  const newUser = { id: USERS.length+1, name, email, password: pass, role: selectedRole, initials };
+  const newUser = { id: USERS.length+1, name, email, password: pass, role: 'user', initials };
   USERS.push(newUser);
   loginAs(newUser);
 }
@@ -1285,8 +1508,8 @@ function doLogout() {
   currentUser = null;
   document.getElementById('app').classList.remove('visible');
   document.getElementById('auth-overlay').classList.remove('hidden');
-  document.getElementById('login-email').value = 'admin@glowlab.co';
-  document.getElementById('login-password').value = 'admin123';
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-password').value = '';
 }
 
 function setupNavForRole(role) {
@@ -1294,13 +1517,20 @@ function setupNavForRole(role) {
   let links = [
     { id: 'dashboard', label: 'Inicio' },
     { id: 'productos', label: 'Productos' },
-    { id: 'rutina', label: 'Mi Rutina' },
   ];
   if (role === 'admin') {
-    links.push({ id: 'categorias', label: 'Categorías' });
+    links.push({ id: 'categorias',      label: 'Categorías' });
+    links.push({ id: 'usuarios',        label: 'Usuarios' });
+    links.push({ id: 'todas-compras',   label: 'Compras' });
     document.getElementById('btn-add-product').style.display = 'flex';
+    document.getElementById('cart-fab').style.display = 'none';
   } else {
+    links.push({ id: 'rutina',   label: 'Mi Rutina' });
+    links.push({ id: 'compras',  label: 'Mis Compras' });
     document.getElementById('btn-add-product').style.display = 'none';
+    document.getElementById('cart-fab').style.display = 'flex';
+    cart = [];
+    updateCartBadge();
   }
   nav.innerHTML = links.map(l =>
     `<button class="nav-link${l.id==='dashboard'?' active':''}" onclick="showSection('${l.id}', this)">${l.label}</button>`
@@ -1309,18 +1539,7 @@ function setupNavForRole(role) {
   renderProducts();
   renderCategories();
   renderCatFilters();
-}
-
-function showSection(id, btn) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.getElementById('section-'+id).classList.add('active');
-  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  else {
-    const b = Array.from(document.querySelectorAll('.nav-link')).find(l => l.textContent.toLowerCase().includes(id.toLowerCase()) || (id==='dashboard' && l.textContent==='Inicio'));
-    if (b) b.classList.add('active');
-  }
-  if (id === 'rutina') renderSavedRoutines();
+  if (role === 'admin') renderUsers();
 }
 
 // ── STATS ──
@@ -1363,7 +1582,8 @@ function renderProducts() {
     const adminBtns = isAdmin
       ? `<button class="btn-sm" onclick="openProductModal(${p.id})">Editar</button>
          <button class="btn-sm danger" onclick="deleteProduct(${p.id})">Eliminar</button>`
-      : `<button class="btn-sm primary" onclick="addToRoutine(${p.id})">+ Rutina</button>`;
+      : `<button class="btn-sm primary" onclick="addToCart(${p.id})">🛒 Agregar</button>
+         <button class="btn-sm" onclick="addToRoutine(${p.id})">+ Rutina</button>`;
     return `
     <div class="product-card">
       <div class="product-img" data-cat="${cat ? cat.name : ''}">
@@ -1376,7 +1596,7 @@ function renderProducts() {
         <div class="product-skin-tags">${p.skins.map(s=>`<span class="skin-tag skin-tag-${['grasa','seca','mixta','sensible','normal'].includes(s)?s:'default'}">${s}</span>`).join('')}</div>
       </div>
       <div class="product-footer">
-        <div class="product-price">$${(p.price/1000).toFixed(0)}k</div>
+        <div class="product-price">$${Number(p.price).toLocaleString('es-CO')}</div>
         <div class="product-actions">${adminBtns}</div>
       </div>
     </div>`;
@@ -1603,7 +1823,7 @@ function generateRoutine() {
         ${s.product
           ? `<div class="step-product">${s.product.name} · <span style="color:var(--light)">${s.product.brand}</span></div>
              <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
-               <span class="step-price">$${(s.product.price/1000).toFixed(0)}k</span>
+               <span class="step-price">$${Number(s.product.price).toLocaleString('es-CO')}</span>
                <span class="step-skin-tags">${s.product.skins.map(sk =>
                  `<span class="skin-tag skin-tag-${VALID_TYPES.includes(sk)?sk:'default'}">${sk}</span>`
                ).join('')}</span>
@@ -1639,13 +1859,17 @@ function renderSavedRoutines() {
     container.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><p>Aún no tienes rutinas guardadas. ¡Genera tu primera rutina personalizada!</p></div>`;
     return;
   }
-  container.innerHTML = savedRoutines.map(r => {
+  container.innerHTML = savedRoutines.map((r, idx) => {
     const productCount = r.steps.filter(s => s.product).length;
+    const showBuyBtn = currentUser?.role !== 'admin';
     return `
     <div class="routine-card">
       <div class="routine-header">
         <div class="routine-card-name">${r.name}</div>
-        <button class="btn-delete-routine" onclick="deleteRoutine(${r.id})">✕ Eliminar</button>
+        <div style="display:flex;gap:6px;">
+          ${showBuyBtn ? `<button class="btn-sm primary" onclick="addRoutineToCart(savedRoutines[${idx}])">🛒 Comprar</button>` : ''}
+          <button class="btn-delete-routine" onclick="deleteRoutine(${r.id})">✕ Eliminar</button>
+        </div>
       </div>
       <div class="routine-date">${r.createdAt || ''} · ${productCount} producto${productCount !== 1 ? 's' : ''}</div>
       <div class="routine-meta-tags">
@@ -1682,6 +1906,18 @@ function showConfirmDelete(title, msg, onConfirm) {
   btn.onclick = () => { closeModal('modal-confirm'); onConfirm(); };
   document.getElementById('modal-confirm').classList.add('open');
 }
+// ── MODAL & TOAST ──
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+function showConfirmDelete(title, msg, onConfirm) {
+  document.getElementById('confirm-title').textContent = title;
+  document.getElementById('confirm-msg').textContent   = msg;
+  const btn = document.getElementById('confirm-action-btn');
+  btn.onclick = () => { closeModal('modal-confirm'); onConfirm(); };
+  document.getElementById('modal-confirm').classList.add('open');
+}
 document.addEventListener('click', e => {
   if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('open');
 });
@@ -1692,6 +1928,315 @@ function showToast(msg, type='') {
   t.className = 'toast ' + type;
   setTimeout(() => t.classList.add('show'), 10);
   setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── USER MANAGEMENT (admin only) ──
+let editingUserId = null;
+let selectedUserModalRole = 'user';
+
+function renderUsers() {
+  if (currentUser?.role !== 'admin') return;
+  const tbody = document.getElementById('users-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = USERS.map(u => `
+    <tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="user-avatar" style="width:32px;height:32px;font-size:12px;flex-shrink:0;">${u.initials}</div>
+          <span>${u.name}</span>
+        </div>
+      </td>
+      <td style="color:var(--mid);">${u.email}</td>
+      <td><span class="role-pill ${u.role}">${u.role === 'admin' ? 'Admin' : 'Usuario'}</span></td>
+      <td>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-sm" onclick="openUserModal(${u.id})">Editar</button>
+          ${u.id !== currentUser.id
+            ? `<button class="btn-sm danger" onclick="deleteUser(${u.id})">Eliminar</button>`
+            : `<span style="font-size:11px;color:var(--light);padding:6px 4px;">Tú</span>`}
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function openUserModal(id) {
+  editingUserId = id || null;
+  const modal = document.getElementById('modal-user');
+  if (id) {
+    const u = USERS.find(x => x.id === id);
+    document.getElementById('modal-user-title').textContent = 'Editar perfil';
+    document.getElementById('user-name-input').value  = u.name;
+    document.getElementById('user-email-input').value = u.email;
+    document.getElementById('user-password-input').value = '';
+    document.getElementById('user-pass-field').style.opacity = '1';
+    document.getElementById('user-password-input').placeholder = 'Dejar vacío para no cambiar';
+    selectUserModalRole(u.role);
+    // Ocultar selector de rol si el usuario no es admin y está editando su propio perfil
+    const roleSelector = document.querySelector('#modal-user .role-selector');
+    const roleLabel    = document.querySelector('#modal-user .role-selector').previousElementSibling;
+    const isOwnProfile = currentUser && currentUser.id === id;
+    const canChangeRole = currentUser && currentUser.role === 'admin';
+    roleSelector.style.display = (isOwnProfile && !canChangeRole) ? 'none' : 'grid';
+    roleLabel.style.display    = (isOwnProfile && !canChangeRole) ? 'none' : 'block';
+  } else {
+    document.getElementById('modal-user-title').textContent = 'Nuevo usuario';
+    ['user-name-input','user-email-input','user-password-input'].forEach(f => document.getElementById(f).value = '');
+    document.getElementById('user-pass-field').style.opacity = '1';
+    document.getElementById('user-password-input').placeholder = 'Mínimo 6 caracteres';
+    selectUserModalRole('user');
+    const roleSelector = document.querySelector('#modal-user .role-selector');
+    const roleLabel    = document.querySelector('#modal-user .role-selector').previousElementSibling;
+    roleSelector.style.display = 'grid';
+    roleLabel.style.display    = 'block';
+  }
+  modal.classList.add('open');
+}
+
+function selectUserModalRole(role) {
+  selectedUserModalRole = role;
+  document.getElementById('modal-role-user').classList.toggle('selected', role === 'user');
+  document.getElementById('modal-role-admin').classList.toggle('selected', role === 'admin');
+}
+
+function saveUser() {
+  const name  = document.getElementById('user-name-input').value.trim();
+  const email = document.getElementById('user-email-input').value.trim();
+  const pass  = document.getElementById('user-password-input').value;
+
+  if (!name || !email) { showToast('Nombre y correo son obligatorios', 'error'); return; }
+  if (USERS.find(u => u.email === email && u.id !== editingUserId)) {
+    showToast('Ya existe un usuario con ese correo', 'error'); return;
+  }
+
+  if (editingUserId) {
+    const u = USERS.find(x => x.id === editingUserId);
+    u.name     = name;
+    u.email    = email;
+    u.role     = selectedUserModalRole;
+    u.initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+    if (pass.length >= 6) u.password = pass;
+    // Refrescar navbar si es el usuario actual
+    if (currentUser && currentUser.id === editingUserId) {
+      currentUser.name     = u.name;
+      currentUser.email    = u.email;
+      currentUser.role     = u.role;
+      currentUser.initials = u.initials;
+      document.getElementById('nav-avatar').textContent   = u.initials;
+      document.getElementById('nav-username').textContent = u.name.split(' ')[0];
+      const rb = document.getElementById('nav-role-badge');
+      rb.textContent = u.role === 'admin' ? 'Admin' : 'Usuario';
+      rb.className   = 'user-role ' + u.role;
+    }
+    showToast('Perfil actualizado ✅', 'success');
+  } else {
+    if (pass.length < 6) { showToast('Contraseña mínimo 6 caracteres', 'error'); return; }
+    const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+    USERS.push({ id: USERS.length + 1, name, email, password: pass, role: selectedUserModalRole, initials });
+    showToast('Usuario creado ✅', 'success');
+  }
+  closeModal('modal-user');
+  renderUsers();
+}
+
+function deleteUser(id) {
+  const u = USERS.find(x => x.id === id);
+  showConfirmDelete(
+    `¿Eliminar a "${u.name}"?`,
+    'El usuario no podrá iniciar sesión. Esta acción no se puede deshacer.',
+    () => {
+      const idx = USERS.findIndex(x => x.id === id);
+      if (idx !== -1) USERS.splice(idx, 1);
+      renderUsers();
+      showToast('Usuario eliminado');
+    }
+  );
+}
+
+// ── PERFIL PROPIO (user badge) ──
+function openOwnProfileModal() {
+  openUserModal(currentUser.id);
+}
+
+// ── TODAS LAS COMPRAS (admin) ──
+// Almacén global de compras (se llena cuando cualquier usuario compra)
+let allPurchases = [];
+
+function registerPurchaseForAdmin(purchase, userName) {
+  allPurchases.unshift({ ...purchase, userName });
+}
+
+function renderAllPurchases() {
+  const el = document.getElementById('all-purchases-list');
+  if (!el) return;
+  if (!allPurchases.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">🛍️</div><p>Aún no hay compras registradas en el sistema.</p></div>`;
+    return;
+  }
+  el.innerHTML = allPurchases.map(p => `
+    <div class="purchase-card">
+      <div class="purchase-card-header">
+        <div>
+          <div class="purchase-id">Orden #${p.id} · <strong style="color:var(--sage-dark);">${p.userName}</strong></div>
+          <div class="purchase-date">${p.fecha}</div>
+        </div>
+        <div class="purchase-total-tag">$${Number(p.total).toLocaleString('es-CO')}</div>
+      </div>
+      <div class="purchase-items">
+        ${p.items.map(i => `<div class="step-dot">${i.product.emoji || '🧴'} <strong>${i.product.name}</strong> · ${i.product.brand}${i.routineName ? ` <span style="color:var(--sage-dark);">(Rutina: ${i.routineName})</span>` : ''}</div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+
+function addToCart(productId) {
+  const p = products.find(x => x.id === productId);
+  if (!p) return;
+  const already = cart.find(i => i.product.id === productId && !i.routineName);
+  if (already) { showToast('Ya está en tu carrito', ''); return; }
+  cart.push({ product: p, source: 'product' });
+  updateCartBadge();
+  showToast(`${p.name} agregado al carrito 🛒`, 'success');
+}
+
+function addRoutineToCart(routine) {
+  const withProducts = routine.steps.filter(s => s.product);
+  if (!withProducts.length) { showToast('Esta rutina no tiene productos disponibles', 'error'); return; }
+  withProducts.forEach(s => {
+    const already = cart.find(i => i.product.id === s.product.id && i.routineName === routine.name);
+    if (!already) cart.push({ product: s.product, source: 'routine', routineName: routine.name });
+  });
+  updateCartBadge();
+  showToast(`Rutina "${routine.name}" agregada al carrito 🛒`, 'success');
+}
+
+function removeFromCart(index) {
+  cart.splice(index, 1);
+  updateCartBadge();
+  renderCartModal();
+}
+
+function updateCartBadge() {
+  const badge = document.getElementById('cart-count');
+  if (badge) badge.textContent = cart.length;
+}
+
+function openCartModal() {
+  renderCartModal();
+  document.getElementById('modal-cart').classList.add('open');
+}
+
+function renderCartModal() {
+  const list = document.getElementById('cart-items-list');
+  const totalEl = document.getElementById('cart-total-amount');
+  if (!cart.length) {
+    list.innerHTML = `<div class="empty-state" style="padding:24px 0;"><div class="empty-icon">🛒</div><p>Tu carrito está vacío</p></div>`;
+    totalEl.textContent = '$0';
+    return;
+  }
+  let total = 0;
+  list.innerHTML = cart.map((item, i) => {
+    total += item.product.price || 0;
+    const tag = item.routineName ? `<span style="font-size:10px;color:var(--sage-dark);background:rgba(107,158,136,0.1);padding:2px 8px;border-radius:10px;margin-left:6px;">Rutina: ${item.routineName}</span>` : '';
+    return `<div class="cart-item">
+      <div class="cart-item-info">
+        <div class="cart-item-name">${item.product.emoji || '🧴'} ${item.product.name} ${tag}</div>
+        <div class="cart-item-brand">${item.product.brand}</div>
+      </div>
+      <div class="cart-item-price">$${Number(item.product.price).toLocaleString('es-CO')}</div>
+      <button class="btn-remove-cart" onclick="removeFromCart(${i})">✕</button>
+    </div>`;
+  }).join('');
+  totalEl.textContent = `$${Number(total).toLocaleString('es-CO')}`;
+}
+
+async function checkoutCart() {
+  if (!cart.length) { showToast('Tu carrito está vacío', 'error'); return; }
+  const userName = currentUser.name;
+  try {
+    const compraRes = await fetch(`${API_BASE}/api/compras`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    });
+    let compraId = null;
+    if (compraRes.ok) {
+      const compraData = await compraRes.json();
+      compraId = compraData.id;
+      await Promise.all(cart.map(item =>
+        fetch(`${API_BASE}/api/detalle-compra`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ compra: { id: compraId }, producto: { id: item.product.id } })
+        })
+      ));
+    }
+    const purchase = {
+      id: compraId || Date.now(),
+      fecha: new Date().toLocaleDateString('es-CO', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }),
+      items: [...cart],
+      total: cart.reduce((s, i) => s + (i.product.price || 0), 0)
+    };
+    userPurchases.unshift(purchase);
+    registerPurchaseForAdmin(purchase, userName);
+    cart = [];
+    updateCartBadge();
+    closeModal('modal-cart');
+    renderPurchases();
+    showToast('¡Compra realizada exitosamente! 🎉', 'success');
+  } catch {
+    const purchase = {
+      id: Date.now(),
+      fecha: new Date().toLocaleDateString('es-CO', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }),
+      items: [...cart],
+      total: cart.reduce((s, i) => s + (i.product.price || 0), 0)
+    };
+    userPurchases.unshift(purchase);
+    registerPurchaseForAdmin(purchase, userName);
+    cart = [];
+    updateCartBadge();
+    closeModal('modal-cart');
+    renderPurchases();
+    showToast('¡Compra realizada exitosamente! 🎉', 'success');
+  }
+}
+
+let userPurchases = [];
+
+function renderPurchases() {
+  const el = document.getElementById('purchase-list');
+  if (!userPurchases.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">🛍️</div><p>Aún no tienes compras registradas. ¡Explora el catálogo o genera tu rutina!</p></div>`;
+    return;
+  }
+  el.innerHTML = userPurchases.map(p => `
+    <div class="purchase-card">
+      <div class="purchase-card-header">
+        <div>
+          <div class="purchase-id">Orden #${p.id}</div>
+          <div class="purchase-date">${p.fecha}</div>
+        </div>
+        <div class="purchase-total-tag">$${Number(p.total).toLocaleString('es-CO')}</div>
+      </div>
+      <div class="purchase-items">
+        ${p.items.map(i => `<div class="step-dot">${i.product.emoji || '🧴'} <strong>${i.product.name}</strong> · ${i.product.brand}${i.routineName ? ` <span style="color:var(--sage-dark);">(${i.routineName})</span>` : ''}</div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+// Actualizar la función showSection para renderizar compras al entrar
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('section-'+id).classList.add('active');
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  else {
+    const b = Array.from(document.querySelectorAll('.nav-link')).find(l => l.textContent.toLowerCase().includes(id.toLowerCase()) || (id==='dashboard' && l.textContent==='Inicio'));
+    if (b) b.classList.add('active');
+  }
+  if (id === 'rutina') renderSavedRoutines();
+  if (id === 'compras') renderPurchases();
+  if (id === 'usuarios') renderUsers();
+  if (id === 'todas-compras') renderAllPurchases();
 }
 </script>
 </body>
