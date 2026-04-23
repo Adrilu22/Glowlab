@@ -1469,11 +1469,18 @@ function selectRole(role) {
   document.getElementById('role-admin').classList.toggle('selected', role==='admin');
 }
 
-function doLogin() {
+async function doLogin() {
   const email = document.getElementById('login-email').value.trim();
   const pass = document.getElementById('login-password').value;
   const user = USERS.find(u => u.email===email && u.password===pass);
   if (!user) { showToast('Credenciales incorrectas', 'error'); return; }
+  try {
+    await fetch(`${API_BASE}/api/usuarios`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nombre: user.name, email: user.email, passwordHash: user.password, rol: user.role.toUpperCase() })
+    });
+  } catch { /* si falla la API el usuario igual puede entrar */ }
   loginAs(user);
 }
 
