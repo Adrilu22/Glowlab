@@ -1,17 +1,5 @@
 # GlowLab — Plataforma de Skincare Inteligente
 
-**Proyecto académico | Metodología Kanban | 3 Sprints**
-
-| Campo | Detalle |
-|---|---|
-| Autora | Adriana Lucía Carreño Medina |
-| Rol | Backend Developer + Product Owner |
-| Email | adrianaluciacarrenomedina90@gmail.com |
-| Fecha | Abril 2026 |
-| Repositorio | https://github.com/alcarreno/Glowlab |
-
----
-
 ## Descripción del Proyecto
 
 GlowLab es una plataforma web de skincare inteligente que permite a los usuarios explorar productos de cuidado de piel, generar rutinas personalizadas según su tipo de piel, gestionar un carrito de compras y acceder a un panel de administración. El proyecto está completamente desplegado en Google Cloud Platform y sigue una arquitectura REST con frontend estático embebido en el mismo contenedor.
@@ -152,15 +140,6 @@ CREATE TABLE rutinas (
 | `user` | Accede a la tienda, carrito de compras y generador de rutinas |
 
 El control de acceso se implementa en el frontend con JavaScript. Después del login, el rol se almacena en `localStorage` y determina qué secciones se muestran. El backend no implementa autenticación JWT en esta versión.
-
-**Cuentas de demostración:**
-
-| Email | Contraseña | Rol |
-|---|---|---|
-| admin@glowlab.co | admin123 | admin |
-| user@glowlab.co | user123 | user |
-
----
 
 ## Estructura del Repositorio
 
