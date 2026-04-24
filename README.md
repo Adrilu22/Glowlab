@@ -220,7 +220,7 @@ cd Glowlab
 
 ```bash
 gcloud auth login
-gcloud config set project api-de-skincare
+gcloud config set project glowlab-api
 gcloud auth application-default login
 ```
 
@@ -229,7 +229,7 @@ gcloud auth application-default login
 El proxy crea un socket local en el puerto 5432 para que la aplicación se conecte a Cloud SQL de forma segura. **Deja esta terminal abierta mientras desarrollas.**
 
 ```bash
-./cloud-sql-proxy api-de-skincare:us-central1:glowlab-db --port 5432
+./cloud-sql-proxy api-de-glowlab-api:us-central1:glowlab-db --port 5432
 ```
 
 > Si no tienes el binario: `gcloud components install cloud-sql-proxy`
@@ -240,7 +240,7 @@ El proxy crea un socket local en el puerto 5432 para que la aplicación se conec
 export DB_NAME=glowlab_db
 export DB_USER=postgres
 export DB_PASSWORD=$(gcloud secrets versions access latest --secret=db-password)
-export INSTANCE_CONNECTION_NAME=api-de-skincare:us-central1:glowlab-db
+export INSTANCE_CONNECTION_NAME=glowlab-api:us-central1:glowlab-db
 export PORT=8080
 ```
 
@@ -249,7 +249,7 @@ export PORT=8080
 ```bash
 cd backend
 mvn clean package -DskipTests
-java -jar target/api-skincare-*.jar
+java -jar target/glowlabapi-*.jar
 ```
 
 La aplicación queda disponible en:
@@ -290,7 +290,7 @@ steps:
     args:
       - build
       - -t
-      - us-central1-docker.pkg.dev/api-de-skincare/cloud-run-source-deploy/skincare-api:$COMMIT_SHA
+      - us-central1-docker.pkg.dev/glowlab-api/cloud-run-source-deploy/glowlab-api:$COMMIT_SHA
       - -f
       - backend/Dockerfile
       - .
@@ -306,7 +306,7 @@ steps:
       - run services update glowlab-api
       - --image=us-central1-docker.pkg.dev/.../skincare-api:$COMMIT_SHA
       - --region=us-central1
-      - --add-cloudsql-instances=api-de-skincare:us-central1:glowlab-db
+      - --add-cloudsql-instances=glowlab-api:us-central1:glowlab-db
       - --set-env-vars=DB_NAME=glowlab_db,DB_USER=postgres,...
       - --set-secrets=DB_PASSWORD=db-password:latest
       - --cpu=2 --memory=2Gi
@@ -547,13 +547,13 @@ Durante el desarrollo se identificaron y resolvieron **10 bugs** documentados en
 
 ## Links de Referencia
 
+
 | Recurso | URL |
 |---|---|
 | Aplicación en producción | https://glowlab-api-994118614969.us-central1.run.app |
 | Repositorio GitHub | https://github.com/alcarreno/Glowlab |
-| Documentación de la API | [docs/api-documentation.md](docs/api-documentation.md) |
-| Cloud Run — Consola GCP | https://console.cloud.google.com/run?project=api-de-skincare |
-| Artifact Registry | https://console.cloud.google.com/artifacts?project=api-de-skincare |
-| Cloud SQL | https://console.cloud.google.com/sql/instances/glowlab-db/overview?project=api-de-skincare |
-| Secret Manager | https://console.cloud.google.com/security/secret-manager?project=api-de-skincare |
-| Cloud Build — Historial | https://console.cloud.google.com/cloud-build/builds?project=api-de-skincare |
+| Cloud Run — Consola GCP | https://console.cloud.google.com/run?project=glowlab-api |
+| Artifact Registry | https://console.cloud.google.com/artifacts?project=glowlab-api|
+| Cloud SQL | https://console.cloud.google.com/sql/instances/glowlab-db/overview?project=glowlab-api |
+| Secret Manager | https://console.cloud.google.com/security/secret-manager?project=glowlab-api |
+| Cloud Build — Historial | https://console.cloud.google.com/cloud-build/builds?project=glowlab-api |
