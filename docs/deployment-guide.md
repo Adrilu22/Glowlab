@@ -10,8 +10,7 @@ La aplicación está compuesta por:
 
 - ⚙️ **Backend:** Spring Boot (Java) → Cloud Run  
 - 🗄️ **Base de datos:** PostgreSQL → Cloud SQL  
-- 🌐 **Frontend:** HTML/CSS/JS → Firebase Hosting  
-
+- 🌐 **Dockerfile:** 
 ---
 
 #  1. Configuración de la Base de Datos (Cloud SQL)
@@ -22,7 +21,7 @@ La aplicación está compuesta por:
 2. Seleccionar **Cloud SQL**  
 3. Crear instancia:
    - Motor: PostgreSQL  
-   - Nombre: `skincare`  
+   - Nombre: `glowlab`  
    - Región: `us-central1`  
 
 ---
@@ -30,18 +29,18 @@ La aplicación está compuesta por:
 ##  Crear base de datos
 
 ```sql
-CREATE DATABASE skincare_db;
+CREATE DATABASE glowlab_db;
 
 Creación automática de tablas
 spring.jpa.hibernate.ddl-auto=update
 
 2. Configuración del Backend
 application.properties
-spring.application.name=skincare-api
+spring.application.name=glowlab-api
 
 server.port=${PORT:8080}
 
-spring.datasource.url=jdbc:postgresql://google/skincare_db?cloudSqlInstance=${INSTANCE_CONNECTION_NAME}&socketFactory=com.google.cloud.sql.postgres.SocketFactory
+spring.datasource.url=jdbc:postgresql://google/glowlab_db?cloudSqlInstance=${INSTANCE_CONNECTION_NAME}&socketFactory=com.google.cloud.sql.postgres.SocketFactory
 spring.datasource.username=${DB_USER}
 spring.datasource.password=${DB_PASSWORD}
 
@@ -75,20 +74,20 @@ ENTRYPOINT ["java","-jar","/app/app.jar"]
 cloudbuild.yaml
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'us-central1-docker.pkg.dev/api-de-skincare/cloud-run-source-deploy/skincare-api:latest', '-f', 'backend/Dockerfile', './backend']
+  args: ['build', '-t', 'us-central1-docker.pkg.dev/glowlab-api/cloud-run-source-deploy/glowlab-api:latest', '-f', 'backend/Dockerfile', './backend']
 
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'us-central1-docker.pkg.dev/api-de-skincare/cloud-run-source-deploy/skincare-api:latest']
+  args: ['push', 'us-central1-docker.pkg.dev/glowlab-api/cloud-run-source-deploy/glowlab-api:latest']
 
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   entrypoint: gcloud
   args:
     [
-      'run', 'services', 'update', 'api-skincare-v2',
-      '--image=us-central1-docker.pkg.dev/api-de-skincare/cloud-run-source-deploy/skincare-api:latest',
+      'run', 'services', 'update', 'glowlab-api',
+      '--image=us-central1-docker.pkg.dev/glowlab-api/cloud-run-source-deploy/glowlab-api:latest',
       '--region=us-central1',
-      '--add-cloudsql-instances=api-de-skincare:us-central1:skincare',
-      '--set-env-vars=DB_NAME=skincare_db,DB_USER=postgres,DB_PASSWORD=TU_PASSWORD,INSTANCE_CONNECTION_NAME=api-de-skincare:us-central1:skincare,PORT=8080',
+      '--add-cloudsql-instances=glowlab-api:us-central1:glowlab',
+      '--set-env-vars=DB_NAME=skincare_db,DB_USER=postgres,DB_PASSWORD=TU_PASSWORD,INSTANCE_CONNECTION_NAME=glowlab-api:us-central1:glowlab,PORT=8080',
       '--timeout=600',
       '--cpu=2',
       '--memory=2Gi',
@@ -96,7 +95,7 @@ steps:
     ]
 
 Permisos Cloud SQL
-gcloud projects add-iam-policy-binding api-de-skincare \
+gcloud projects add-iam-policy-binding glowlab-api \
   --member="serviceAccount:PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
   --role="roles/cloudsql.client"
 

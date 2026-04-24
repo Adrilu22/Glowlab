@@ -1,17 +1,5 @@
 # GlowLab — Plataforma de Skincare Inteligente
 
-**Proyecto académico | Metodología Kanban | 3 Sprints**
-
-| Campo | Detalle |
-|---|---|
-| Autora | Adriana Lucía Carreño Medina |
-| Rol | Backend Developer + Product Owner |
-| Email | adrianaluciacarrenomedina90@gmail.com |
-| Fecha | Abril 2026 |
-| Repositorio | https://github.com/alcarreno/Glowlab |
-
----
-
 ## Descripción del Proyecto
 
 GlowLab es una plataforma web de skincare inteligente que permite a los usuarios explorar productos de cuidado de piel, generar rutinas personalizadas según su tipo de piel, gestionar un carrito de compras y acceder a un panel de administración. El proyecto está completamente desplegado en Google Cloud Platform y sigue una arquitectura REST con frontend estático embebido en el mismo contenedor.
@@ -153,15 +141,6 @@ CREATE TABLE rutinas (
 
 El control de acceso se implementa en el frontend con JavaScript. Después del login, el rol se almacena en `localStorage` y determina qué secciones se muestran. El backend no implementa autenticación JWT en esta versión.
 
-**Cuentas de demostración:**
-
-| Email | Contraseña | Rol |
-|---|---|---|
-| admin@glowlab.co | admin123 | admin |
-| user@glowlab.co | user123 | user |
-
----
-
 ## Estructura del Repositorio
 
 ```
@@ -241,7 +220,7 @@ cd Glowlab
 
 ```bash
 gcloud auth login
-gcloud config set project api-de-skincare
+gcloud config set project glowlab-api
 gcloud auth application-default login
 ```
 
@@ -250,7 +229,7 @@ gcloud auth application-default login
 El proxy crea un socket local en el puerto 5432 para que la aplicación se conecte a Cloud SQL de forma segura. **Deja esta terminal abierta mientras desarrollas.**
 
 ```bash
-./cloud-sql-proxy api-de-skincare:us-central1:glowlab-db --port 5432
+./cloud-sql-proxy api-de-glowlab-api:us-central1:glowlab-db --port 5432
 ```
 
 > Si no tienes el binario: `gcloud components install cloud-sql-proxy`
@@ -261,7 +240,7 @@ El proxy crea un socket local en el puerto 5432 para que la aplicación se conec
 export DB_NAME=glowlab_db
 export DB_USER=postgres
 export DB_PASSWORD=$(gcloud secrets versions access latest --secret=db-password)
-export INSTANCE_CONNECTION_NAME=api-de-skincare:us-central1:glowlab-db
+export INSTANCE_CONNECTION_NAME=glowlab-api:us-central1:glowlab-db
 export PORT=8080
 ```
 
@@ -270,7 +249,7 @@ export PORT=8080
 ```bash
 cd backend
 mvn clean package -DskipTests
-java -jar target/api-skincare-*.jar
+java -jar target/glowlabapi-*.jar
 ```
 
 La aplicación queda disponible en:
@@ -311,7 +290,7 @@ steps:
     args:
       - build
       - -t
-      - us-central1-docker.pkg.dev/api-de-skincare/cloud-run-source-deploy/skincare-api:$COMMIT_SHA
+      - us-central1-docker.pkg.dev/glowlab-api/cloud-run-source-deploy/glowlab-api:$COMMIT_SHA
       - -f
       - backend/Dockerfile
       - .
@@ -327,7 +306,7 @@ steps:
       - run services update glowlab-api
       - --image=us-central1-docker.pkg.dev/.../skincare-api:$COMMIT_SHA
       - --region=us-central1
-      - --add-cloudsql-instances=api-de-skincare:us-central1:glowlab-db
+      - --add-cloudsql-instances=glowlab-api:us-central1:glowlab-db
       - --set-env-vars=DB_NAME=glowlab_db,DB_USER=postgres,...
       - --set-secrets=DB_PASSWORD=db-password:latest
       - --cpu=2 --memory=2Gi
@@ -568,13 +547,13 @@ Durante el desarrollo se identificaron y resolvieron **10 bugs** documentados en
 
 ## Links de Referencia
 
+
 | Recurso | URL |
 |---|---|
 | Aplicación en producción | https://glowlab-api-994118614969.us-central1.run.app |
 | Repositorio GitHub | https://github.com/alcarreno/Glowlab |
-| Documentación de la API | [docs/api-documentation.md](docs/api-documentation.md) |
-| Cloud Run — Consola GCP | https://console.cloud.google.com/run?project=api-de-skincare |
-| Artifact Registry | https://console.cloud.google.com/artifacts?project=api-de-skincare |
-| Cloud SQL | https://console.cloud.google.com/sql/instances/glowlab-db/overview?project=api-de-skincare |
-| Secret Manager | https://console.cloud.google.com/security/secret-manager?project=api-de-skincare |
-| Cloud Build — Historial | https://console.cloud.google.com/cloud-build/builds?project=api-de-skincare |
+| Cloud Run — Consola GCP | https://console.cloud.google.com/run?project=glowlab-api |
+| Artifact Registry | https://console.cloud.google.com/artifacts?project=glowlab-api|
+| Cloud SQL | https://console.cloud.google.com/sql/instances/glowlab-db/overview?project=glowlab-api |
+| Secret Manager | https://console.cloud.google.com/security/secret-manager?project=glowlab-api |
+| Cloud Build — Historial | https://console.cloud.google.com/cloud-build/builds?project=glowlab-api |
