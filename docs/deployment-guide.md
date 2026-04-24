@@ -77,7 +77,7 @@ steps:
   args: ['build', '-t', 'us-central1-docker.pkg.dev/api-de-skincare/cloud-run-source-deploy/glowlab-api:latest', '-f', 'backend/Dockerfile', './backend']
 
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'us-central1-docker.pkg.dev/glowlab-api/cloud-run-source-deploy/skincare-api:latest']
+  args: ['push', 'us-central1-docker.pkg.dev/glowlab-api/cloud-run-source-deploy/glowlab-api:latest']
 
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   entrypoint: gcloud
