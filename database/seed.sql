@@ -1,7 +1,7 @@
 -- GlowLab — Datos iniciales (seed)
 -- Coincide con el mock del frontend: íconos emoji por categoría
 
-INSERT INTO categoria (nombre, descripcion, icono) VALUES
+INSERT INTO categorias (nombre, descripcion, icono) VALUES
     ('Limpiadores',     'Productos para limpiar e higienizar el rostro',            '🫧'),
     ('Tónicos',         'Equilibran el pH y preparan la piel para el siguiente paso','💧'),
     ('Sérums',          'Tratamientos concentrados para necesidades específicas',    '✨'),
@@ -9,7 +9,7 @@ INSERT INTO categoria (nombre, descripcion, icono) VALUES
     ('Protección Solar','Filtros solares de amplio espectro para uso diario',        '☀️'),
     ('Tratamientos',    'Mascarillas, exfoliantes y activos especializados',         '🌿');
 
-INSERT INTO producto (nombre, marca, descripcion, precio, tipos_piel, categoria_id) VALUES
+INSERT INTO productos (nombre, marca, descripcion, precio, tipos_piel, categoria_id) VALUES
     ('Gel Limpiador Suave',         'Cetaphil',        'Limpiador suave sin jabón, ideal para uso diario',             25000, 'seca,sensible,normal',    1),
     ('Espuma Limpiadora Purificante','La Roche-Posay',  'Elimina el exceso de sebo sin resecar',                        28000, 'grasa,mixta',             1),
     ('Agua Micelar 3 en 1',         'Garnier',         'Limpia, desmaquilla y tonifica en un solo paso',               18000, 'seca,mixta,sensible',     1),
