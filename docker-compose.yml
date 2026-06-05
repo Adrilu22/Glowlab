@@ -34,7 +34,7 @@ services:
       DB_PASSWORD: glowlab123
       DB_NAME: glowlab_db
       INSTANCE_CONNECTION_NAME: local:docker:instance
-      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_API_KEY: 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
       # Email — reemplazar con tu Gmail y App Password
       MAIL_HOST: sandbox.smtp.mailtrap.io
       MAIL_PORT: "587"

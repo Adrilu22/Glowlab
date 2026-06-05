@@ -19,10 +19,10 @@ import java.util.Map;
 @Service
 public class ChatbotService {
 
-    // La API key va en el header x-goog-api-key, NO como query param,
-    // para evitar que aparezca en logs de Cloud Run y Prometheus.
-    private static final String GEMINI_URL =
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+    // Groq — API compatible con OpenAI, free tier sin límite diario
+    private static final String GROQ_URL =
+            "https://api.groq.com/openai/v1/chat/completions";
+    private static final String GROQ_MODEL = "llama-3.1-8b-instant";
 
     private final ProductoRepository productoRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -37,7 +37,7 @@ public class ChatbotService {
 
     public String chat(String userMessage, List<Map<String, String>> historial) {
         if (apiKey == null || apiKey.isBlank()) {
-            return "⚠️ El chatbot requiere una clave de Gemini. Configura GEMINI_API_KEY en el entorno.";
+            return "⚠️ El chatbot requiere una clave de API. Configura GEMINI_API_KEY en el entorno.";
         }
 
         try {
@@ -46,9 +46,9 @@ public class ChatbotService {
             String requestBody = buildRequestBody(systemPrompt, userMessage, historial);
 
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(GEMINI_URL))
+                    .uri(URI.create(GROQ_URL))
                     .header("Content-Type", "application/json")
-                    .header("x-goog-api-key", apiKey)   // key en header, no en URL
+                    .header("Authorization", "Bearer " + apiKey)
                     .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                     .build();
 
@@ -57,13 +57,13 @@ public class ChatbotService {
 
             if (response.statusCode() != 200) {
                 String errorMsg = json.path("error").path("message").asText("sin detalle");
-                System.err.println("❌ Gemini " + response.statusCode() + ": " + errorMsg);
+                System.err.println("❌ Groq " + response.statusCode() + ": " + errorMsg);
                 return "Lo siento, tuve un problema al consultar la IA. Intenta de nuevo en unos momentos.";
             }
 
-            return json.path("candidates").path(0)
-                    .path("content").path("parts").path(0)
-                    .path("text").asText("No pude generar una respuesta en este momento.");
+            return json.path("choices").path(0)
+                    .path("message").path("content")
+                    .asText("No pude generar una respuesta en este momento.");
 
         } catch (Exception e) {
             System.err.println("❌ Error chatbot [" + e.getClass().getSimpleName() + "]: " + e.getMessage());
@@ -110,52 +110,36 @@ public class ChatbotService {
     private String buildRequestBody(String systemPrompt, String userMessage,
                                     List<Map<String, String>> historial) throws Exception {
         ObjectNode body = objectMapper.createObjectNode();
+        body.put("model", GROQ_MODEL);
+        body.put("max_tokens", 1500);
 
-        // Instrucción de sistema
-        ObjectNode systemInstruction = objectMapper.createObjectNode();
-        ArrayNode sysParts = objectMapper.createArrayNode();
-        ObjectNode sysPart = objectMapper.createObjectNode();
-        sysPart.put("text", systemPrompt);
-        sysParts.add(sysPart);
-        systemInstruction.set("parts", sysParts);
-        body.set("system_instruction", systemInstruction);
+        ArrayNode messages = objectMapper.createArrayNode();
 
-        // Historial + mensaje actual
-        ArrayNode contents = objectMapper.createArrayNode();
+        // System prompt
+        ObjectNode systemMsg = objectMapper.createObjectNode();
+        systemMsg.put("role", "system");
+        systemMsg.put("content", systemPrompt);
+        messages.add(systemMsg);
 
+        // Historial
         for (Map<String, String> entry : historial) {
             String role    = entry.getOrDefault("role", "user");
             String content = entry.getOrDefault("content", "");
             if (!content.isBlank()) {
-                String geminiRole = role.equals("assistant") ? "model" : "user";
-                ObjectNode turn = objectMapper.createObjectNode();
-                turn.put("role", geminiRole);
-                ArrayNode parts = objectMapper.createArrayNode();
-                ObjectNode part = objectMapper.createObjectNode();
-                part.put("text", content);
-                parts.add(part);
-                turn.set("parts", parts);
-                contents.add(turn);
+                ObjectNode msg = objectMapper.createObjectNode();
+                msg.put("role", role.equals("assistant") ? "assistant" : "user");
+                msg.put("content", content);
+                messages.add(msg);
             }
         }
 
-        // Mensaje actual del usuario
-        ObjectNode currentTurn = objectMapper.createObjectNode();
-        currentTurn.put("role", "user");
-        ArrayNode currentParts = objectMapper.createArrayNode();
-        ObjectNode currentPart = objectMapper.createObjectNode();
-        currentPart.put("text", userMessage);
-        currentParts.add(currentPart);
-        currentTurn.set("parts", currentParts);
-        contents.add(currentTurn);
+        // Mensaje actual
+        ObjectNode currentMsg = objectMapper.createObjectNode();
+        currentMsg.put("role", "user");
+        currentMsg.put("content", userMessage);
+        messages.add(currentMsg);
 
-        body.set("contents", contents);
-
-        // Configuración de generación
-        ObjectNode generationConfig = objectMapper.createObjectNode();
-        generationConfig.put("maxOutputTokens", 1500);
-        body.set("generationConfig", generationConfig);
-
+        body.set("messages", messages);
         return objectMapper.writeValueAsString(body);
     }
 }
