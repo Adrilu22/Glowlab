@@ -1,6 +1,9 @@
 # Claude Code local config
 .claude/
 
+# Variables de entorno — nunca subir al repo
+.env
+
 # Compiled class file
 *.class
 

@@ -1,0 +1,88 @@
+services:
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: glowlab_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: glowlab123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+    networks:
+      - glowlab-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      # Override Cloud SQL datasource for local Docker use
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/glowlab_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: glowlab123
+      # Required by application.properties placeholders (not used when above env vars are set)
+      DB_USER: postgres
+      DB_PASSWORD: glowlab123
+      DB_NAME: glowlab_db
+      INSTANCE_CONNECTION_NAME: local:docker:instance
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      # Email — reemplazar con tu Gmail y App Password
+      MAIL_HOST: sandbox.smtp.mailtrap.io
+      MAIL_PORT: "587"
+      MAIL_USERNAME: tu_usuario_mailtrap
+      MAIL_PASSWORD: tu_password_mailtrap
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - glowlab-net
+
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=7d"
+    depends_on:
+      - api
+    networks:
+      - glowlab-net
+
+  grafana:
+    image: grafana/grafana:10.4.0
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: glowlab123
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+    networks:
+      - glowlab-net
+
+networks:
+  glowlab-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  prometheus_data:
+  grafana_data:

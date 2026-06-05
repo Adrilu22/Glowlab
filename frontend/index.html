@@ -899,6 +899,158 @@
     display: flex; align-items: center; justify-content: center;
     font-size: 11px; font-weight: 700;
   }
+
+  /* ── CHATBOT FAB & PANEL ── */
+  .chatbot-fab {
+    position: fixed; bottom: 28px; right: 28px; z-index: 900;
+    display: none;
+    align-items: center; justify-content: center;
+    width: 56px; height: 56px;
+    background: var(--sage);
+    color: #fff;
+    border: none; border-radius: 50%;
+    font-size: 22px;
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    transition: background 0.2s, transform 0.15s;
+  }
+  .chatbot-fab:hover { background: var(--sage-dark); transform: scale(1.07); }
+
+  .chatbot-panel {
+    position: fixed; bottom: 96px; right: 28px; z-index: 901;
+    width: 360px;
+    background: var(--warm-white);
+    border-radius: 20px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    transform: translateY(20px) scale(0.97);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.25s cubic-bezier(.4,0,.2,1), opacity 0.25s;
+  }
+  .chatbot-panel.open {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .chatbot-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, var(--sage) 0%, var(--sage-dark) 100%);
+    color: #fff;
+  }
+  .chatbot-header-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .chatbot-header-info { flex: 1; }
+  .chatbot-header-name { font-weight: 600; font-size: 15px; }
+  .chatbot-header-status { font-size: 12px; opacity: 0.85; }
+  .chatbot-close {
+    background: none; border: none; color: rgba(255,255,255,0.8);
+    cursor: pointer; font-size: 18px; line-height: 1;
+    padding: 4px 6px; border-radius: 6px;
+    transition: background 0.15s;
+  }
+  .chatbot-close:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+  .chatbot-messages {
+    flex: 1; overflow-y: auto;
+    padding: 16px;
+    min-height: 240px; max-height: 340px;
+    display: flex; flex-direction: column; gap: 12px;
+    scroll-behavior: smooth;
+  }
+
+  .chatbot-msg {
+    max-width: 85%;
+    padding: 10px 14px;
+    border-radius: 16px;
+    font-size: 14px; line-height: 1.55;
+    word-break: break-word;
+    white-space: pre-wrap;
+  }
+  .chatbot-msg.bot {
+    background: var(--cream);
+    border: 1px solid var(--border);
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+    color: var(--charcoal);
+  }
+  .chatbot-msg.user {
+    background: var(--sage);
+    color: #fff;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+  }
+
+  .chatbot-typing {
+    display: flex; gap: 5px; align-items: center;
+    padding: 12px 16px;
+    background: var(--cream);
+    border: 1px solid var(--border);
+    border-radius: 16px; border-bottom-left-radius: 4px;
+    align-self: flex-start;
+  }
+  .chatbot-typing span {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--sage);
+    animation: chatbounce 1.2s infinite;
+    display: block;
+  }
+  .chatbot-typing span:nth-child(2) { animation-delay: 0.18s; }
+  .chatbot-typing span:nth-child(3) { animation-delay: 0.36s; }
+  @keyframes chatbounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-6px); }
+  }
+
+  .chatbot-input-row {
+    display: flex; gap: 8px; align-items: center;
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    background: var(--warm-white);
+  }
+  .chatbot-input {
+    flex: 1;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 9px 16px;
+    font-family: var(--font-body); font-size: 14px;
+    background: var(--cream);
+    color: var(--charcoal);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .chatbot-input:focus { border-color: var(--sage); }
+  .chatbot-input:disabled { opacity: 0.6; }
+  .chatbot-send {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--sage); color: #fff;
+    border: none; cursor: pointer; font-size: 15px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s, transform 0.15s;
+    flex-shrink: 0;
+  }
+  .chatbot-send:hover { background: var(--sage-dark); transform: scale(1.07); }
+  .chatbot-send:disabled { background: var(--light); cursor: not-allowed; transform: none; }
+  .chatbot-advisor-btn {
+    align-self: flex-start;
+    background: linear-gradient(135deg, var(--rose) 0%, var(--rose-dark) 100%);
+    color: #fff;
+    border: none; border-radius: 100px;
+    padding: 10px 20px;
+    font-family: var(--font-body); font-size: 13px; font-weight: 500;
+    cursor: pointer;
+    transition: transform 0.15s, opacity 0.2s;
+    box-shadow: 0 2px 12px rgba(203,110,102,0.28);
+  }
+  .chatbot-advisor-btn:hover { transform: scale(1.04); opacity: 0.9; }
   .cart-item {
     display: flex; align-items: center; justify-content: space-between;
     padding: 12px 0; border-bottom: 1px solid var(--border);
@@ -1200,6 +1352,30 @@
 <button class="cart-fab" id="cart-fab" onclick="openCartModal()">
   🛒 Mi carrito <span class="cart-badge" id="cart-count">0</span>
 </button>
+
+<!-- CHATBOT FAB -->
+<button class="chatbot-fab" id="chatbot-fab" onclick="toggleChatbot()" title="Habla con Glow">
+  💬
+</button>
+
+<!-- CHATBOT PANEL -->
+<div class="chatbot-panel" id="chatbot-panel">
+  <div class="chatbot-header">
+    <div class="chatbot-header-avatar">✨</div>
+    <div class="chatbot-header-info">
+      <div class="chatbot-header-name">Glow</div>
+      <div class="chatbot-header-status">Tu asistente de skincare</div>
+    </div>
+    <button class="chatbot-close" onclick="toggleChatbot()" title="Cerrar">✕</button>
+  </div>
+  <div class="chatbot-messages" id="chatbot-messages"></div>
+  <div class="chatbot-input-row">
+    <input class="chatbot-input" id="chatbot-input" type="text"
+           placeholder="Escribe tu consulta..."
+           onkeydown="if(event.key==='Enter') sendChatbot()">
+    <button class="chatbot-send" id="chatbot-send-btn" onclick="sendChatbot()">➤</button>
+  </div>
+</div>
 
 <!-- MODAL USER -->
 <div class="modal-overlay" id="modal-user">
@@ -1520,6 +1696,12 @@ async function loginAs(user) {
 
 function doLogout() {
   currentUser = null;
+  chatbotIsOpen = false;
+  chatbotWelcomed = false;
+  chatHistory = [];
+  document.getElementById('chatbot-panel').classList.remove('open');
+  document.getElementById('chatbot-fab').style.display = 'none';
+  document.getElementById('chatbot-messages').innerHTML = '';
   document.getElementById('app').classList.remove('visible');
   document.getElementById('auth-overlay').classList.remove('hidden');
   document.getElementById('login-email').value = '';
@@ -1538,11 +1720,13 @@ function setupNavForRole(role) {
     links.push({ id: 'todas-compras',   label: 'Compras' });
     document.getElementById('btn-add-product').style.display = 'flex';
     document.getElementById('cart-fab').style.display = 'none';
+    document.getElementById('chatbot-fab').style.display = 'flex';
   } else {
     links.push({ id: 'rutina',   label: 'Mi Rutina' });
     links.push({ id: 'compras',  label: 'Mis Compras' });
     document.getElementById('btn-add-product').style.display = 'none';
     document.getElementById('cart-fab').style.display = 'flex';
+    document.getElementById('chatbot-fab').style.display = 'flex';
     cart = [];
     updateCartBadge();
   }
@@ -2223,6 +2407,115 @@ function renderPurchases() {
         ${p.items.map(i => `<div class="step-dot">${i.product.emoji || '🧴'} <strong>${i.product.name}</strong> · ${i.product.brand}${i.routineName ? ` <span style="color:var(--sage-dark);">(${i.routineName})</span>` : ''}</div>`).join('')}
       </div>
     </div>`).join('');
+}
+
+// ── CHATBOT ──
+let chatbotIsOpen = false;
+let chatbotWelcomed = false;
+let chatHistory = []; // { role: 'user'|'assistant', content: string }
+
+function toggleChatbot() {
+  chatbotIsOpen = !chatbotIsOpen;
+  document.getElementById('chatbot-panel').classList.toggle('open', chatbotIsOpen);
+  if (chatbotIsOpen) {
+    if (!chatbotWelcomed) {
+      chatbotWelcomed = true;
+      const name = currentUser ? currentUser.name.split(' ')[0] : '';
+      appendChatMsg('bot', `¡Hola${name ? ', ' + name : ''}! 👋 Bienvenida a GlowLab.\n\n¿Cuál es tu tipo de piel? (seca, grasa, mixta, sensible o normal) y ¿qué te preocupa más? (acné, manchas, hidratación, poros, etc.) Con eso te recomiendo los productos ideales para ti. ✨`);
+    }
+    setTimeout(() => document.getElementById('chatbot-input').focus(), 150);
+  }
+}
+
+function renderChatText(text) {
+  return text
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" style="color:var(--sage-dark);text-decoration:underline;">$1</a>')
+    .replace(/\n/g, '<br>');
+}
+
+function appendChatMsg(role, rawText) {
+  const container = document.getElementById('chatbot-messages');
+  let text = rawText;
+  let showAdvisor = false;
+
+  if (role === 'bot' && text.includes('[ASESOR_DISPONIBLE]')) {
+    text = text.replace('[ASESOR_DISPONIBLE]', '').trim();
+    showAdvisor = true;
+  }
+
+  const div = document.createElement('div');
+  div.className = `chatbot-msg ${role}`;
+  if (role === 'bot') {
+    div.innerHTML = renderChatText(text);
+  } else {
+    div.textContent = text;
+  }
+  container.appendChild(div);
+
+  if (showAdvisor) {
+    const btn = document.createElement('button');
+    btn.className = 'chatbot-advisor-btn';
+    btn.innerHTML = '📍 Visitar un punto GlowLab';
+    btn.onclick = openAdvisorContact;
+    container.appendChild(btn);
+  }
+
+  container.scrollTop = container.scrollHeight;
+}
+
+function openAdvisorContact() {
+  document.querySelectorAll('.chatbot-advisor-btn').forEach(b => b.remove());
+  appendChatMsg('bot',
+    `¡Con mucho gusto! 🌿 Te invitamos a acercarte a uno de nuestros puntos de atención:\n\n` +
+    `📍 **GlowLab — Sede Bogotá**\nCr. 15 #93-75, Chicó · Bogotá\nLun – Sáb: 9 am – 7 pm\n\n` +
+    `📍 **GlowLab — Sede Medellín**\nCl. 10 #43E-31, El Poblado · Medellín\nLun – Sáb: 10 am – 6 pm\n\n` +
+    `Uno de nuestros asesores especializados te brindará la **mejor atención personalizada** para el cuidado de tu piel. 💆‍♀️\n\n` +
+    `¡Gracias por comunicarte con GlowLab! ✨ Fue un placer acompañarte.`
+  );
+}
+
+async function sendChatbot() {
+  const input = document.getElementById('chatbot-input');
+  const sendBtn = document.getElementById('chatbot-send-btn');
+  const message = input.value.trim();
+  if (!message) return;
+
+  input.value = '';
+  appendChatMsg('user', message);
+  const prevHistory = [...chatHistory];
+  chatHistory.push({ role: 'user', content: message });
+  sendBtn.disabled = true;
+  input.disabled = true;
+
+  const container = document.getElementById('chatbot-messages');
+  const typing = document.createElement('div');
+  typing.className = 'chatbot-typing';
+  typing.innerHTML = '<span></span><span></span><span></span>';
+  container.appendChild(typing);
+  container.scrollTop = container.scrollHeight;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/chatbot`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mensaje: message, historial: prevHistory })
+    });
+    const data = await res.json();
+    typing.remove();
+    const respuesta = data.respuesta || data.error || 'No pude generar una respuesta.';
+    appendChatMsg('bot', respuesta);
+    chatHistory.push({ role: 'assistant', content: respuesta.replace('[ASESOR_DISPONIBLE]', '').trim() });
+  } catch {
+    typing.remove();
+    appendChatMsg('bot', 'Hubo un problema de conexión. Por favor intenta de nuevo.');
+  } finally {
+    sendBtn.disabled = false;
+    input.disabled = false;
+    input.focus();
+  }
 }
 
 // Actualizar la función showSection para renderizar compras al entrar
