@@ -34,8 +34,10 @@ Los endpoints no validan el formato ni el contenido de los datos recibidos (ej. 
 | V6 — Sin validación de input | Spring Data JPA usa consultas parametrizadas, previniendo inyección SQL. Pendiente validación de formato. |
 
 ### Medidas de seguridad activas:
-- **Autenticación JWT** con algoritmo HS256 y expiración de 15 minutos.
-- **Endpoints protegidos**: todos los métodos `POST`, `PUT` y `DELETE` en `/api/**` requieren token válido, excepto login y registro.
+- **Autenticación JWT** con algoritmo HS256 y expiración de 15 minutos. Implementada en `SecurityConfig.java`, `JwtUtil.java` y `JwtAuthFilter.java`.
+- **Endpoints protegidos**: todos los métodos `POST`, `PUT` y `DELETE` en `/api/**` requieren token válido en el header `Authorization: Bearer <token>`, excepto `/api/auth/**`, `/api/usuarios` (POST) y `/api/chatbot` (POST).
+- **BCrypt en contraseñas**: `UsuarioController` y `AuthController` usan `BCryptPasswordEncoder` antes de guardar cualquier contraseña.
+- **API key de Gemini en header**: `ChatbotService` envía la clave en el header `x-goog-api-key` en lugar de query param, evitando que aparezca en logs de Cloud Run.
 - **CSRF deshabilitado** correctamente para APIs REST stateless.
 - **CORS configurado** con lista de orígenes permitidos explícita.
 - **HTTPS automático en producción** a través de Google Cloud Run.
@@ -45,9 +47,8 @@ Los endpoints no validan el formato ni el contenido de los datos recibidos (ej. 
 
 ## 3. Medidas pendientes
 
-### P1 — Hashear contraseñas con BCrypt *(alta prioridad)*
-**Qué falta:** Usar `BCryptPasswordEncoder` al guardar y verificar contraseñas en lugar de texto plano.  
-**Por qué no se implementó:** Requiere migrar las contraseñas existentes en la base de datos. Se dejó pendiente para no romper los datos de prueba actuales.
+### P1 — Hashear contraseñas con BCrypt *(implementado)*
+`BCryptPasswordEncoder` está activo en `UsuarioController` y `AuthController`. Las contraseñas nuevas y actualizaciones se hashean antes de guardarse. Las contraseñas ya existentes en la BD de prueba deben recrearse para funcionar con el nuevo flujo de login.
 
 ### P2 — Rate limiting en el endpoint de login *(alta prioridad)*
 **Qué falta:** Bloquear la IP o el email tras N intentos fallidos consecutivos (ej. 5 intentos → bloqueo de 15 min).  

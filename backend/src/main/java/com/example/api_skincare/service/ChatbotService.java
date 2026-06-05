@@ -19,8 +19,10 @@ import java.util.Map;
 @Service
 public class ChatbotService {
 
+    // La API key va en el header x-goog-api-key, NO como query param,
+    // para evitar que aparezca en logs de Cloud Run y Prometheus.
     private static final String GEMINI_URL =
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=";
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
     private final ProductoRepository productoRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -44,8 +46,9 @@ public class ChatbotService {
             String requestBody = buildRequestBody(systemPrompt, userMessage, historial);
 
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(GEMINI_URL + apiKey))
+                    .uri(URI.create(GEMINI_URL))
                     .header("Content-Type", "application/json")
+                    .header("x-goog-api-key", apiKey)   // key en header, no en URL
                     .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                     .build();
 

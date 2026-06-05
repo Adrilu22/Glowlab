@@ -3,6 +3,7 @@ package com.example.api_skincare.controller;
 import com.example.api_skincare.model.Usuario;
 import com.example.api_skincare.repository.UsuarioRepository;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,9 +13,12 @@ import java.util.List;
 public class UsuarioController {
 
     private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UsuarioController(UsuarioRepository usuarioRepository) {
+    public UsuarioController(UsuarioRepository usuarioRepository,
+                             PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder   = passwordEncoder;
     }
 
     @GetMapping
@@ -34,6 +38,10 @@ public class UsuarioController {
         if (usuarioRepository.existsByEmail(usuario.getEmail())) {
             return ResponseEntity.badRequest().body("Ya existe un usuario con ese correo");
         }
+        // Hashear la contraseña antes de guardar
+        if (usuario.getPasswordHash() != null && !usuario.getPasswordHash().isBlank()) {
+            usuario.setPasswordHash(passwordEncoder.encode(usuario.getPasswordHash()));
+        }
         return ResponseEntity.ok(usuarioRepository.save(usuario));
     }
 
@@ -45,8 +53,9 @@ public class UsuarioController {
                     existing.setNombre(datos.getNombre());
                     existing.setEmail(datos.getEmail());
                     existing.setRol(datos.getRol());
+                    // Hashear la nueva contraseña si se envía
                     if (datos.getPasswordHash() != null && !datos.getPasswordHash().isBlank()) {
-                        existing.setPasswordHash(datos.getPasswordHash());
+                        existing.setPasswordHash(passwordEncoder.encode(datos.getPasswordHash()));
                     }
                     return ResponseEntity.ok(usuarioRepository.save(existing));
                 })

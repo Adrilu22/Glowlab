@@ -1,14 +1,12 @@
-# GlowLab — Plataforma de Skincare Inteligente
+# GlowLab — Plataforma de Skincare
 
-## Descripción del Proyecto
-
-GlowLab es una plataforma web de skincare inteligente que permite a los usuarios explorar productos de cuidado de piel, generar rutinas personalizadas según su tipo de piel, gestionar un carrito de compras y acceder a un panel de administración. El proyecto está completamente desplegado en Google Cloud Platform y sigue una arquitectura REST con frontend estático embebido en el mismo contenedor.
+GlowLab es una plataforma web de skincare que permite explorar productos, generar rutinas personalizadas, gestionar un carrito de compras y acceder a un panel de administración. Está desplegada en Google Cloud Platform con arquitectura REST y frontend embebido en el mismo contenedor.
 
 **URL de producción:** https://glowlab-api-994118614969.us-central1.run.app
 
 ---
 
-## Arquitectura General
+## Arquitectura general
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -48,11 +46,17 @@ GlowLab es una plataforma web de skincare inteligente que permite a los usuarios
 │                   SECRET MANAGER                            │
 │         db-password → DB_PASSWORD (env var en Cloud Run)   │
 └─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│         MONITOREO LOCAL (Proyecto 3)                        │
+│   Prometheus :9090  ←  scrape /metrics  ←  API :8080       │
+│   Grafana    :3000  ←  datasource       ←  Prometheus      │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Stack Tecnológico
+## Stack tecnológico
 
 | Capa | Tecnología | Versión |
 |---|---|---|
@@ -67,13 +71,14 @@ GlowLab es una plataforma web de skincare inteligente que permite a los usuarios
 | BD gestionada | Google Cloud SQL | — |
 | Secretos | Google Secret Manager | — |
 | Registro de imágenes | Google Artifact Registry | — |
-| Control de versiones | GitHub | — |
+| Monitoreo | Prometheus + Grafana | 2.51 / 10.4 |
+| IA | Google Gemini 2.0 Flash | API REST |
 
 ---
 
-## Modelo de Datos
+## Modelo de datos
 
-Las tablas se crean y actualizan automáticamente por Hibernate con `ddl-auto=update`. El DDL a continuación es de referencia para replicar el esquema manualmente.
+Las tablas se crean y actualizan automáticamente por Hibernate con `ddl-auto=update`.
 
 ```sql
 -- Categorías de productos de skincare
@@ -132,20 +137,23 @@ CREATE TABLE rutinas (
 
 ---
 
-## Sistema de Roles
+## Sistema de roles
 
 | Rol | Permisos |
 |---|---|
 | `admin` | Accede al panel de administración: crear, editar y eliminar categorías y productos |
-| `user` | Accede a la tienda, carrito de compras y generador de rutinas |
+| `user` | Accede a la tienda, carrito de compras, generador de rutinas y chatbot Glow |
 
-El control de acceso se implementa en el frontend con JavaScript. Después del login, el rol se almacena en `localStorage` y determina qué secciones se muestran. El backend no implementa autenticación JWT en esta versión.
+El control de acceso está implementado en el frontend con JavaScript. Después del login, el rol se guarda en `localStorage` y determina qué secciones se muestran. La autenticación en el backend está pendiente de implementación completa (ver sección JWT más abajo).
 
-## Estructura del Repositorio
+---
+
+## Estructura del repositorio
 
 ```
 GlowLab/
 ├── cloudbuild.yaml                        # Pipeline CI/CD de Cloud Build
+├── docker-compose.yml                     # Stack completo: API + BD + Prometheus + Grafana
 ├── README.md                              # Este archivo
 ├── .github/
 │   └── workflows/
@@ -173,31 +181,117 @@ GlowLab/
 │       │   │   ├── DetalleCompraRepository.java
 │       │   │   ├── UsuarioRepository.java
 │       │   │   └── RutinaRepository.java
-│       │   └── controller/
-│       │       ├── CategoriaController.java
-│       │       ├── ProductoController.java
-│       │       ├── CompraController.java
-│       │       ├── UsuarioController.java
-│       │       └── RutinaController.java
+│       │   ├── controller/
+│       │   │   ├── CategoriaController.java
+│       │   │   ├── ProductoController.java
+│       │   │   ├── CompraController.java
+│       │   │   ├── UsuarioController.java
+│       │   │   ├── RutinaController.java
+│       │   │   └── ChatbotController.java  # NUEVO — Chatbot con Gemini
+│       │   └── service/
+│       │       └── ChatbotService.java     # NUEVO — Integración Gemini 2.0 Flash
 │       └── resources/
-│           └── application.properties
+│           ├── application.properties
+│           └── application.properties.example
 ├── frontend/
-│   ├── index.html                         # SPA: tienda, login, admin, rutinas
+│   ├── index.html                         # SPA: tienda, login, admin, rutinas, chatbot
 │   ├── style.css
 │   └── script.js
 ├── database/
 │   ├── schema.sql                         # DDL de referencia
-│   ├── seed.sql                           # Datos iniciales
-│   └── diagram.png
+│   └── seed.sql                           # Datos iniciales
+├── monitoring/                            # NUEVO — Stack de monitoreo
+│   ├── prometheus.yml                     # Config de scraping (target: api:8080/metrics)
+│   └── grafana/
+│       ├── provisioning/
+│       │   └── datasources/
+│       │       └── prometheus.yml         # Datasource de Grafana apuntando a Prometheus
+│       └── dashboards/
+│           └── glowlab.json               # Dashboard con throughput, latencia y métricas
+├── scripts/                               # NUEVO — Scripts de utilidad
+│   ├── generate_traffic.py                # Genera tráfico de prueba (Python)
+│   └── generate_traffic.ps1              # Genera tráfico de prueba (PowerShell)
 └── docs/
     ├── HISTORIAS_USUARIO.md               # Criterios de aceptación por historia
     ├── api-documentation.md               # Referencia completa de la API REST
-    └── deployment-guide.md
+    ├── deployment-guide.md
+    └── security.md                        # NUEVO — Análisis de seguridad del proyecto
 ```
 
 ---
 
-## Configuración y Ejecución Local
+## Correr el stack completo (local con Docker Compose)
+
+Este comando levanta la API, la base de datos, Prometheus y Grafana en una sola red.
+
+### Requisitos previos
+
+- Docker Desktop 24+
+- Una API key de Gemini (para el chatbot): https://aistudio.google.com/app/apikey
+
+### Paso 1: Configurar la API key de Gemini
+
+```bash
+# Linux / macOS
+export GEMINI_API_KEY=tu_clave_aqui
+
+# Windows PowerShell
+$env:GEMINI_API_KEY="tu_clave_aqui"
+```
+
+> Si no tienes una clave de Gemini, el chatbot muestra un mensaje de error pero el resto de la app funciona normalmente.
+
+### Paso 2: Levantar el stack
+
+```bash
+docker-compose up --build
+```
+
+Esto inicia cuatro servicios:
+- API + frontend: http://localhost:8080
+- Prometheus: http://localhost:9090
+- Grafana: http://localhost:3000 (usuario: `admin`, contraseña: `glowlab123`)
+
+### Paso 3: Verificar que todo funciona
+
+```bash
+# API responde
+curl http://localhost:8080/api/categorias
+
+# Métricas expuestas para Prometheus
+curl http://localhost:8080/metrics | head -20
+
+# Prometheus scrapeando correctamente
+# Ir a http://localhost:9090/targets → el target glowlab-api debe estar UP
+```
+
+### Paso 4: Ver el dashboard en Grafana
+
+1. Abrir http://localhost:3000
+2. Login con `admin` / `glowlab123`
+3. Ir a Dashboards → "GlowLab API - Monitoreo"
+
+El dashboard tiene paneles de throughput (requests por segundo), latencia (P50/P95/P99) y tasa de errores HTTP.
+
+### Paso 5: Generar tráfico de prueba
+
+Para ver las métricas en movimiento, correr el script de carga:
+
+```bash
+# Python (requiere: pip install requests)
+python scripts/generate_traffic.py
+
+# PowerShell
+.\scripts\generate_traffic.ps1
+```
+
+El script hace requests continuos a los endpoints principales durante 60 segundos.
+
+---
+
+## Configuración y ejecución local sin Docker
+
+Si prefieres correr solo el backend sin contenedor, necesitas Cloud SQL Auth Proxy y Java 21.
 
 ### Requisitos previos
 
@@ -226,13 +320,11 @@ gcloud auth application-default login
 
 ### Paso 3: Levantar el proxy de Cloud SQL
 
-El proxy crea un socket local en el puerto 5432 para que la aplicación se conecte a Cloud SQL de forma segura. **Deja esta terminal abierta mientras desarrollas.**
-
 ```bash
 ./cloud-sql-proxy api-de-glowlab-api:us-central1:glowlab-db --port 5432
 ```
 
-> Si no tienes el binario: `gcloud components install cloud-sql-proxy`
+> Deja esta terminal abierta mientras desarrollas.
 
 ### Paso 4: Configurar variables de entorno
 
@@ -242,6 +334,7 @@ export DB_USER=postgres
 export DB_PASSWORD=$(gcloud secrets versions access latest --secret=db-password)
 export INSTANCE_CONNECTION_NAME=glowlab-api:us-central1:glowlab-db
 export PORT=8080
+export GEMINI_API_KEY=tu_clave_aqui
 ```
 
 ### Paso 5: Compilar y ejecutar
@@ -249,36 +342,100 @@ export PORT=8080
 ```bash
 cd backend
 mvn clean package -DskipTests
-java -jar target/glowlabapi-*.jar
+java -jar target/api-skincare-*.jar
 ```
 
-La aplicación queda disponible en:
-- **Frontend:** http://localhost:8080
-- **API REST:** http://localhost:8080/api/categorias
+---
 
-### Paso 6: Verificar que funciona
+## Chatbot Glow
 
-```bash
-# Listar categorías
-curl http://localhost:8080/api/categorias
+El chatbot está implementado como una nueva funcionalidad del Proyecto 3. Es visible en la app como un botón flotante en la esquina inferior derecha, disponible para usuarios logueados.
 
-# Listar productos
-curl http://localhost:8080/api/productos
+### Cómo funciona
 
-# Crear una categoría de prueba
-curl -X POST http://localhost:8080/api/categorias \
-  -H "Content-Type: application/json" \
-  -d '{"nombre":"Exfoliacion","descripcion":"Productos exfoliantes","icono":"✨"}'
+1. El usuario envía un mensaje desde el frontend
+2. El frontend manda `POST /api/chatbot` con el mensaje y el historial de la conversación
+3. El backend carga el catálogo actual de productos desde la base de datos
+4. Construye un system prompt con el catálogo y llama a la API de Gemini 2.0 Flash
+5. Devuelve la respuesta al frontend
+
+El chatbot puede pedir el tipo de piel, preguntar por preocupaciones específicas y recomendar productos del catálogo con nombre, marca y precio. Si detecta que el usuario necesita una asesoría más personalizada, incluye un botón adicional en el chat.
+
+### Variables de entorno requeridas
+
+| Variable | Descripción | Cómo obtenerla |
+|---|---|---|
+| `GEMINI_API_KEY` | Clave para llamar a Gemini 2.0 Flash | https://aistudio.google.com/app/apikey |
+
+### Endpoint
+
 ```
+POST /api/chatbot
+Content-Type: application/json
+
+{
+  "mensaje": "Hola, tengo piel grasa",
+  "historial": [
+    { "role": "user", "content": "mensaje anterior" },
+    { "role": "assistant", "content": "respuesta anterior" }
+  ]
+}
+```
+
+---
+
+## Monitoreo con Prometheus y Grafana
+
+El stack de monitoreo se agrega con `docker-compose up`. No hace falta desplegarlo en la nube para la sustentación.
+
+### Métricas expuestas en `/metrics`
+
+La API expone métricas de Micrometer en formato Prometheus:
+
+- `http_server_requests_seconds_count` — contador de requests por endpoint y código de respuesta
+- `http_server_requests_seconds` — histograma de latencia (incluye P50, P95, P99)
+- `jvm_memory_used_bytes` — uso de memoria JVM (gauge)
+
+### Dashboard de Grafana
+
+El archivo `monitoring/grafana/dashboards/glowlab.json` se provisiona automáticamente al levantar Grafana con Docker Compose. Contiene tres paneles:
+
+- Throughput (requests/seg)
+- Latencia P95 por endpoint
+- Tasa de errores 4xx/5xx
+
+---
+
+## Autenticación
+
+La autenticación está parcialmente configurada en el proyecto. `application.properties` tiene el parámetro `jwt.secret` y el docker-compose lo expone como variable de entorno `JWT_SECRET`. Sin embargo, la implementación de Spring Security (filtro JWT, controlador de login) está pendiente de agregar.
+
+Estado actual de los endpoints:
+- Los endpoints de lectura (`GET`) están abiertos (comportamiento esperado según el enunciado)
+- Los endpoints de escritura (`POST`, `PUT`, `DELETE`) también están abiertos por falta de la implementación del filtro JWT
+
+Para implementar JWT completo hace falta agregar al `pom.xml`:
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-security</artifactId>
+</dependency>
+<dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-api</artifactId>
+    <version>0.12.5</version>
+</dependency>
+```
+
+Y crear los archivos `SecurityConfig.java`, `JwtUtil.java`, `JwtAuthFilter.java` y `AuthController.java`.
 
 ---
 
 ## Pipeline CI/CD
 
-Todo `push` o merge a la rama `main` dispara automáticamente el pipeline de Cloud Build:
+Todo push o merge a `main` dispara el pipeline de Cloud Build:
 
 ```yaml
-# cloudbuild.yaml
 steps:
   # 1. Compilar con Maven (imagen con soporte Java 21)
   - name: 'maven:3.9-eclipse-temurin-21'
@@ -299,7 +456,7 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', '--all-tags', 'us-central1-docker.pkg.dev/...']
 
-  # 4. Desplegar en Cloud Run con secreto de BD y conexión Cloud SQL
+  # 4. Desplegar en Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args:
@@ -312,7 +469,7 @@ steps:
       - --cpu=2 --memory=2Gi
 ```
 
-**Tiempo promedio de deploy:** 3-4 minutos.
+Tiempo promedio de deploy: 3-4 minutos.
 
 ### Dockerfile (multi-stage)
 
@@ -325,7 +482,7 @@ RUN mvn dependency:go-offline -q
 COPY src ./src
 RUN mvn clean package -DskipTests -q
 
-# Etapa 2: imagen final ligera con JRE Alpine (~200 MB vs ~600 MB)
+# Etapa 2: imagen final con JRE Alpine (~200 MB)
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
@@ -333,227 +490,160 @@ EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
 ```
 
-> El frontend (HTML/CSS/JS) se copia dentro del JAR como recurso estático de Spring Boot bajo `src/main/resources/static/`. Un solo contenedor sirve tanto el API REST como el frontend.
-
 ---
 
-## Sprints e Historias de Usuario
+## Sprints e historias de usuario
 
-### Sprint 1 — Fundamentos de Backend y Base de Datos
+### Sprint 1 — Fundamentos de backend y base de datos
 
 | Historia | Descripción | Rama | Estado |
 |---|---|---|---|
-| HU-01 | Modelado de BD PostgreSQL para entidades con campos completos | `feature/sprint1-database-schema` | Completada |
+| HU-01 | Modelado de BD PostgreSQL | `feature/sprint1-database-schema` | Completada |
 | HU-02 | API REST CRUD completo para Categorías | `feature/sprint1-backend-categorias` | Completada |
 
-**Entregables:**
-- Entidades JPA: `Categoria` (nombre, descripcion, icono), `Producto` (nombre, marca, descripcion, precio, tipos_piel)
-- Repositorios Spring Data JPA con búsqueda por nombre (`findByNombreContainingIgnoreCase`)
-- CRUD completo para `/api/categorias` y `/api/productos`
-- Esquema gestionado automáticamente por Hibernate
-
----
-
-### Sprint 2 — Frontend con Roles
+### Sprint 2 — Frontend con roles
 
 | Historia | Descripción | Rama | Estado |
 |---|---|---|---|
-| HU-05 | Sistema de Login Dual y renderizado condicional por Rol | `feature/sprint2-frontend-login` | Completada |
-| HU-06 | Panel de Administración Frontend para Categorías | `feature/sprint2-frontend-categorias` | Completada |
+| HU-05 | Sistema de Login Dual y renderizado por Rol | `feature/sprint2-frontend-login` | Completada |
+| HU-06 | Panel de Administración Frontend | `feature/sprint2-frontend-categorias` | Completada |
 
-**Entregables:**
-- Login con dos roles: `admin` y `user`, persistencia en `localStorage`
-- Renderizado condicional: el panel de admin solo aparece para el rol `admin`
-- Panel de administración con formularios para crear/editar/eliminar categorías y productos
-- Tienda con filtrado por categoría, carrito de compras y total dinámico
-- Generador de rutinas con preguntas sobre tipo de piel y preocupaciones
-
----
-
-### Sprint 3 — Integración y Despliegue en Producción
+### Sprint 3 — Integración y despliegue en producción
 
 | Historia | Descripción | Rama | Estado |
 |---|---|---|---|
-| HU-09 | Integración Fetch API: conectar frontend con backend REST | `feature/sprint3-frontend-fetch-api` | Completada |
-| HU-10 | Pipeline CI/CD y despliegue en GCP/Firebase | `feature/sprint3-cicd-deploy` | Completada |
+| HU-09 | Integración Fetch API con backend REST | `feature/sprint3-frontend-fetch-api` | Completada |
+| HU-10 | Pipeline CI/CD y despliegue en GCP | `feature/sprint3-cicd-deploy` | Completada |
 
-**Entregables:**
-- Frontend 100% conectado al API REST via `fetch()` con `async/await`
-- Persistencia real de compras (`/api/compras`), usuarios (`/api/usuarios`) y rutinas (`/api/rutinas`)
-- Pipeline Cloud Build automatizado: compilar → docker → push → deploy
-- Servicio live en Cloud Run con Cloud SQL, Secret Manager y Artifact Registry
+### Sprint 4 — Proyecto 3: monitoreo, seguridad y chatbot
+
+| Historia | Descripción | Rama | Estado |
+|---|---|---|---|
+| HU-13 | Monitoreo con Prometheus y Grafana | `feature/sprint4-monitoring` | Completada |
+| HU-14 | Análisis de seguridad (security.md) | `feature/sprint4-security` | Completada |
+| HU-15 | Chatbot Glow con Gemini 2.0 Flash | `feature/sprint4-chatbot` | Completada |
+| HU-16 | Autenticación JWT en endpoints de escritura | `feature/sprint4-jwt-auth` | Pendiente |
 
 ---
 
-## Métricas del Proyecto
+## Métricas del proyecto
 
-> Datos extraídos directamente del historial de git y GitHub Insights.  
-> Comandos para replicar: `git log --oneline --all | wc -l` · `git log --oneline | grep "fix:" | wc -l`
-
-### Métricas de Código
+### Métricas de código
 
 | Métrica | Valor |
 |---|---|
-| Endpoints REST implementados | 22 |
+| Endpoints REST implementados | 23 |
 | Entidades JPA (tablas en PostgreSQL) | 6 |
-| Controladores REST | 5 |
+| Controladores REST | 6 (incluye ChatbotController) |
 | Repositorios Spring Data JPA | 6 |
+| Servicios | 1 (ChatbotService) |
 | Tamaño de imagen Docker final | ~200 MB |
 | Tiempo promedio de deploy (Cloud Build) | 3-4 minutos |
 
-### Métricas de Proceso (GitHub Insights)
+### Métricas de proceso (GitHub Insights)
 
 | Métrica | Valor |
 |---|---|
-| Total de commits | 82 |
-| Commits de nuevas funcionalidades (`feat:`) | 29 |
-| Commits de corrección de errores (`fix:`) | 23 |
-| Pull Requests mergeados | 12 |
-| Issues cerrados | 10 (#1 al #10) |
-| Sprints completados | 3 |
-| Historias de usuario completadas | 10 |
-| Ramas feature creadas | 8 |
-| Duración total del proyecto | 3 días (20–22 abril 2026) |
-| Contribuidores activos | 3 |
-
-### Cómo consultar GitHub Insights
-
-En el repositorio de GitHub, ir a la pestaña **Insights** y revisar:
-- **Pulse** — resumen de actividad reciente (commits, PRs, issues)
-- **Contributors** — commits por persona y líneas de código aportadas
-- **Code frequency** — evolución del tamaño del código semana a semana
-- **Network** — grafo de ramas y merges
-
-Para generar reportes desde la terminal:
-
-```bash
-# Commits por tipo
-git log --oneline | grep -c "feat:"     # funcionalidades
-git log --oneline | grep -c "fix:"      # correcciones
-
-# Commits por autor
-git shortlog -s -n --all
-
-# Actividad por fecha
-git log --format="%ad" --date=short | sort | uniq -c
-
-# Todas las ramas creadas
-git branch -a | grep "feature/"
-```
+| Total de commits | 82+ |
+| Commits de nuevas funcionalidades (`feat:`) | 29+ |
+| Commits de corrección de errores (`fix:`) | 23+ |
+| Pull Requests mergeados | 12+ |
+| Sprints completados | 4 |
+| Historias de usuario completadas | 13+ |
 
 ---
 
-## Bugs Encontrados y Resueltos
+## Bugs encontrados y resueltos
 
 Durante el desarrollo se identificaron y resolvieron **10 bugs** documentados en el historial de git. A continuación el registro completo:
 
 ### BUG-01 — Error fatal de conexión a base de datos
-**Síntoma:** `FATAL: database "skincare" does not exist` al arrancar el servicio en Cloud Run.  
-**Causa:** La variable `DB_NAME` tenía `skincare` como valor por defecto en `application.properties` y en `cloudbuild.yaml`, pero la base de datos real se llama `glowlab_db`.  
-**Solución:** Corregir el valor por defecto a `glowlab_db` en ambos archivos.  
+**Síntoma:** `FATAL: database "skincare" does not exist` al arrancar en Cloud Run.
+**Causa:** La variable `DB_NAME` tenía `skincare` como valor por defecto en `application.properties` y en `cloudbuild.yaml`, pero la base de datos real se llama `glowlab_db`.
+**Solución:** Corregir el valor por defecto a `glowlab_db` en ambos archivos.
 **Commits:** `211157a` · `4e2ca7a` · `389b283` · `a08b8ba`
 
----
-
 ### BUG-02 — Pipeline CI/CD falla al compilar (Java 21 no soportado)
-**Síntoma:** Cloud Build fallaba con `Unsupported class file major version` durante `mvn package`.  
-**Causa:** La imagen `gcr.io/cloud-builders/mvn` no incluye JDK 21.  
-**Solución:** Reemplazar por `maven:3.9-eclipse-temurin-21` en el primer paso de `cloudbuild.yaml`.  
+**Síntoma:** Cloud Build fallaba con `Unsupported class file major version` durante `mvn package`.
+**Causa:** La imagen `gcr.io/cloud-builders/mvn` no incluye JDK 21.
+**Solución:** Reemplazar por `maven:3.9-eclipse-temurin-21` en el primer paso de `cloudbuild.yaml`.
 **Commits:** `1a3dbad` · `389b283`
 
----
-
-### BUG-03 — Nombres de tablas JPA en singular no coinciden con PostgreSQL
-**Síntoma:** Hibernate intentaba crear `categoria` y `producto` (singular), pero el esquema de BD usa `categorias` y `productos` (plural), generando errores de mapeo.  
-**Causa:** Las entidades JPA no tenían la anotación `@Table(name=...)` explícita.  
-**Solución:** Agregar `@Table(name = "categorias")` y `@Table(name = "productos")` en las entidades.  
+### BUG-03 — Nombres de tablas JPA en singular
+**Síntoma:** Hibernate intentaba crear `categoria` y `producto` en singular.
+**Causa:** Las entidades JPA no tenían `@Table(name=...)` explícita.
+**Solución:** Agregar `@Table(name = "categorias")` y `@Table(name = "productos")`.
 **Commits:** `083a1fe` · `032cf11`
 
----
-
 ### BUG-04 — Frontend enviaba payload vacío a `/api/compras`
-**Síntoma:** Las compras no se guardaban en la base de datos. El endpoint recibía `{}` o `null`.  
-**Causa:** `checkoutCart()` enviaba un objeto vacío en lugar del array `[{ productoId }]` que espera el endpoint.  
-**Solución:** Corregir la función para serializar el carrito como `cart.map(item => ({ productoId: item.product.id }))`.  
+**Síntoma:** Las compras no se guardaban. El endpoint recibía `{}` o `null`.
+**Causa:** `checkoutCart()` enviaba un objeto vacío en lugar del array esperado.
+**Solución:** Corregir para serializar el carrito como `cart.map(item => ({ productoId: item.product.id }))`.
 **Commits:** `25167a0`
 
----
-
 ### BUG-05 — CORS bloqueaba peticiones desde la URL de producción
-**Síntoma:** Error `CORS policy: No 'Access-Control-Allow-Origin'` al acceder desde `glowlab-api-994118614969.us-central1.run.app`.  
-**Causa:** La URL del servicio de Cloud Run no estaba en la lista `cors.allowed-origins`.  
-**Solución:** Agregar la URL completa de Cloud Run a `cors.allowed-origins` en `application.properties`.  
+**Síntoma:** Error `CORS policy: No 'Access-Control-Allow-Origin'`.
+**Causa:** La URL de Cloud Run no estaba en `cors.allowed-origins`.
+**Solución:** Agregar la URL completa de Cloud Run a `application.properties`.
 **Commits:** `504cc34`
 
----
-
 ### BUG-06 — `API_BASE` absoluta rompía el frontend en producción
-**Síntoma:** Todas las llamadas `fetch()` fallaban con error de red cuando el frontend se servía desde el mismo contenedor.  
-**Causa:** `API_BASE` apuntaba a una URL absoluta externa. Al estar en el mismo origen, el navegador rechazaba la petición.  
-**Solución:** Cambiar a `API_BASE = ''` (cadena vacía) para que todas las rutas sean relativas al origen actual.  
+**Síntoma:** Todas las llamadas `fetch()` fallaban con error de red.
+**Causa:** `API_BASE` apuntaba a una URL absoluta externa.
+**Solución:** Cambiar a `API_BASE = ''` para que todas las rutas sean relativas al origen.
 **Commits:** `99af7f8`
 
----
-
 ### BUG-07 — `tiposPiel` llegaba como array del backend pero el frontend esperaba string CSV
-**Síntoma:** Los tipos de piel no se mostraban en las tarjetas de productos en la tienda.  
-**Causa:** El backend devolvía `["seca","mixta"]` (array JSON), pero `mapProducto()` en el frontend llamaba `.split(",")` como si fuera un string.  
-**Solución:** Actualizar `mapProducto()` para detectar si `tiposPiel` es un array y usarlo directamente, o aplicar `.split()` si es string.  
+**Síntoma:** Los tipos de piel no se mostraban en las tarjetas de productos.
+**Causa:** El backend devolvía `["seca","mixta"]` pero el frontend llamaba `.split(",")`.
+**Solución:** Actualizar `mapProducto()` para detectar si `tiposPiel` es array o string.
 **Commits:** `8a205b8`
 
----
-
 ### BUG-08 — Permisos de ejecución de `mvnw` en CI Linux
-**Síntoma:** GitHub Actions fallaba con `Permission denied: ./mvnw` en el runner de Ubuntu.  
-**Causa:** El archivo `mvnw` no tenía el bit de ejecución activado en el sistema de archivos de Linux.  
-**Solución:** Agregar `chmod +x mvnw` como paso previo en el workflow de GitHub Actions.  
+**Síntoma:** GitHub Actions fallaba con `Permission denied: ./mvnw`.
+**Causa:** El archivo `mvnw` no tenía el bit de ejecución en Linux.
+**Solución:** Agregar `chmod +x mvnw` como paso previo.
 **Commits:** `bfbce44`
 
----
-
 ### BUG-09 — Build context incorrecto en Docker
-**Síntoma:** El paso de `docker build` fallaba porque el Dockerfile no encontraba el JAR compilado ni los recursos del frontend.  
-**Causa:** El build context apuntaba al subdirectorio `backend/`, pero el Dockerfile necesita acceso a la raíz del proyecto para copiar `frontend/`.  
-**Solución:** Cambiar el build context a `.` (raíz) y referenciar el Dockerfile como `-f backend/Dockerfile`.  
+**Síntoma:** El paso de `docker build` no encontraba el JAR compilado.
+**Causa:** El build context apuntaba al subdirectorio `backend/`.
+**Solución:** Cambiar el build context a `.` (raíz) y referenciar el Dockerfile con `-f backend/Dockerfile`.
 **Commits:** `c7b4e2e`
 
----
-
 ### BUG-10 — Variable `PORT` sin valor por defecto en Dockerfile
-**Síntoma:** La aplicación no arrancaba al ejecutarla localmente porque `PORT` no estaba definida.  
-**Causa:** `application.properties` usaba `${PORT}` sin fallback, y Cloud Run inyecta esta variable pero en local no existe.  
-**Solución:** Cambiar a `server.port=${PORT:8080}` para que use 8080 cuando `PORT` no esté definida.  
+**Síntoma:** La aplicación no arrancaba localmente porque `PORT` no estaba definida.
+**Causa:** `application.properties` usaba `${PORT}` sin fallback.
+**Solución:** Cambiar a `server.port=${PORT:8080}`.
 **Commits:** `a0ec08e`
 
 ---
 
-## Lecciones Aprendidas
+## Lecciones aprendidas
 
-1. **Nombre exacto de la base de datos:** La variable `DB_NAME` debe ser `glowlab_db`. Cualquier otro valor (`skincare`, `glowlab`) provoca un error fatal al inicializar el pool de conexiones Hikari en Cloud Run.
+**Nombre exacto de la base de datos.** La variable `DB_NAME` debe ser `glowlab_db`. Cualquier otro valor provoca un error fatal al inicializar el pool de conexiones Hikari en Cloud Run.
 
-2. **Imagen Maven compatible con Java 21:** `gcr.io/cloud-builders/mvn` no incluye soporte para Java 21 y falla en el paso de compilación. La imagen correcta para Cloud Build es `maven:3.9-eclipse-temurin-21`.
+**Imagen Maven compatible con Java 21.** `gcr.io/cloud-builders/mvn` no incluye soporte para Java 21. La imagen correcta para Cloud Build es `maven:3.9-eclipse-temurin-21`.
 
-3. **Cloud SQL Socket Factory vs TCP:** En Cloud Run, la conexión a Cloud SQL se establece mediante Unix socket, no TCP directo. La URL JDBC debe usar el formato `jdbc:postgresql://google/${DB_NAME}?cloudSqlInstance=PROYECTO:REGION:INSTANCIA&socketFactory=com.google.cloud.sql.postgres.SocketFactory`.
+**Cloud SQL Socket Factory vs TCP.** En Cloud Run, la conexión a Cloud SQL usa Unix socket. La URL JDBC debe usar el formato `jdbc:postgresql://google/${DB_NAME}?cloudSqlInstance=PROYECTO:REGION:INSTANCIA&socketFactory=com.google.cloud.sql.postgres.SocketFactory`.
 
-4. **Frontend embebido en el JAR:** Colocar el frontend en `src/main/resources/static/` permite que Spring Boot lo sirva automáticamente. Se simplifica enormemente el despliegue: un solo contenedor, una sola URL, sin CORS entre dominios distintos.
+**Frontend embebido en el JAR.** Colocar el frontend en `src/main/resources/static/` hace que Spring Boot lo sirva automáticamente. Un solo contenedor, una sola URL, sin CORS entre dominios distintos.
 
-5. **`server.forward-headers-strategy=framework`:** Es obligatorio en Spring Boot detrás de un proxy (Cloud Run usa un load balancer interno). Sin esta configuración, los redirects generan URLs `http://` en lugar de `https://`.
+**`server.forward-headers-strategy=framework`.** Obligatorio en Spring Boot detrás de un proxy. Sin esto, los redirects generan URLs `http://` en lugar de `https://`.
 
-6. **Compras en una sola llamada:** Enviar el array completo de productos a `POST /api/compras` (que crea la compra y todos sus detalles atómicamente) es más robusto que múltiples llamadas independientes desde el frontend, que pueden fallar parcialmente.
-
-7. **CORS en producción:** Definir los orígenes permitidos en `application.properties` como variable (`cors.allowed-origins`) y leerlos con `@Value` en `WebConfig.java` permite configurar CORS sin recompilar el código.
+**Variables de entorno para secretos externos.** La API key de Gemini y el JWT secret nunca deben quedar en el código fuente. Siempre se pasan como variables de entorno (`GEMINI_API_KEY`, `JWT_SECRET`) y en producción se gestionan via Secret Manager.
 
 ---
 
-## Links de Referencia
-
+## Links de referencia
 
 | Recurso | URL |
 |---|---|
 | Aplicación en producción | https://glowlab-api-994118614969.us-central1.run.app |
 | Repositorio GitHub | https://github.com/alcarreno/Glowlab |
 | Cloud Run — Consola GCP | https://console.cloud.google.com/run?project=glowlab-api |
-| Artifact Registry | https://console.cloud.google.com/artifacts?project=glowlab-api|
+| Artifact Registry | https://console.cloud.google.com/artifacts?project=glowlab-api |
 | Cloud SQL | https://console.cloud.google.com/sql/instances/glowlab-db/overview?project=glowlab-api |
 | Secret Manager | https://console.cloud.google.com/security/secret-manager?project=glowlab-api |
 | Cloud Build — Historial | https://console.cloud.google.com/cloud-build/builds?project=glowlab-api |
+| Google AI Studio (Gemini API) | https://aistudio.google.com/app/apikey |
