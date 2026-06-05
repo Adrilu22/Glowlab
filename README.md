@@ -388,7 +388,17 @@ Content-Type: application/json
 
 ## Monitoreo con Prometheus y Grafana
 
-El stack de monitoreo se agrega con `docker-compose up`. No hace falta desplegarlo en la nube para la sustentación.
+El stack de monitoreo corre **únicamente en local** con `docker-compose up`. No está desplegado en Google Cloud Run — el enunciado del Proyecto 3 lo permite explícitamente: *"Prometheus y Grafana pueden correr localmente con Docker Compose durante la sustentación; no es obligatorio desplegarlos en la nube."*
+
+Lo que sí está disponible en producción es el endpoint `/metrics` del API:
+
+| Recurso | URL |
+|---|---|
+| Métricas en producción | https://glowlab-api-994118614969.us-central1.run.app/metrics |
+| Prometheus (solo local) | http://localhost:9091 |
+| Grafana (solo local) | http://localhost:3001 |
+
+Para la sustentación: correr `docker compose up` localmente, abrir Grafana en http://localhost:3001 con `admin` / `glowlab123`, y mostrar el dashboard "GlowLab API - Monitoreo" con tráfico generado por `python scripts/generate_traffic.py`.
 
 ### Métricas expuestas en `/metrics`
 
