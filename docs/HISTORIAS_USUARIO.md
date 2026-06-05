@@ -220,3 +220,80 @@ Para entender la arquitectura implementada, replicar el entorno localmente y eva
 - [ ] Contiene la sección "Métricas del Proyecto" y "Lecciones Aprendidas" especificadas en la rúbrica de calificación
 
 ---
+
+# ══════════════════════════════════════════════════════════════
+# SPRINT 4 — Seguridad, Monitoreo e Inteligencia Artificial
+# ══════════════════════════════════════════════════════════════
+
+---
+
+## HU-13 | Autenticación JWT con Spring Security
+**Rama:** `feature/sprint4-jwt-auth`
+**Responsable:** @Adriana Carreño
+**Sprint:** 4 | **Estimación:** 5 puntos | **Tipo:** Feature | **Prioridad:** Alta
+
+### Como usuaria registrada
+Quiero iniciar sesión con mis credenciales y recibir un token de acceso seguro
+Para poder acceder a las funcionalidades protegidas de la plataforma sin exponer mi contraseña en cada petición
+
+### Criterios de Aceptación:
+- [ ] `POST /api/auth/login` valida el email y la contraseña con BCrypt y retorna un token JWT firmado con HS256
+- [ ] El token incluye el email, el rol del usuario y una fecha de expiración de 8 horas
+- [ ] `JwtAuthFilter` intercepta cada request y rechaza con 403 Forbidden si no se presenta un token válido en el header `Authorization: Bearer`
+- [ ] Los endpoints `GET` de productos y categorías permanecen públicos; solo los endpoints de escritura (POST, PUT, DELETE) requieren autenticación
+- [ ] `POST /api/auth/register` permite crear un nuevo usuario con contraseña hasheada antes de almacenarla
+
+---
+
+## HU-14 | Análisis de Seguridad y Documento security.md
+**Rama:** `feature/sprint4-security-analysis`
+**Responsable:** @Adriana Carreño
+**Sprint:** 4 | **Estimación:** 3 puntos | **Tipo:** Documentation | **Prioridad:** Alta
+
+### Como administradora del proyecto
+Quiero documentar las vulnerabilidades identificadas y las medidas aplicadas
+Para demostrar que el equipo analiza la seguridad del sistema de forma sistemática y tiene un plan de respuesta ante incidentes
+
+### Criterios de Aceptación:
+- [ ] El archivo `docs/security.md` contiene una sección de vulnerabilidades identificadas con nivel de riesgo (Alto/Medio/Bajo)
+- [ ] Documenta V1 (contraseñas en texto plano → mitigada con BCrypt) y V2 (endpoints sin autenticación → mitigada con Spring Security + JWT) como vulnerabilidades implementadas
+- [ ] Documenta V3 (ausencia de rate limiting en `/api/auth/login`) como vulnerabilidad pendiente con propuesta de solución usando Bucket4j
+- [ ] Incluye un plan de respuesta a incidentes: ante acceso no autorizado, rotar `JWT_SECRET` en las variables de entorno de Cloud Run para invalidar todos los tokens activos
+
+---
+
+## HU-15 | Chatbot de IA "Glow" con Recomendación de Productos
+**Rama:** `feature/sprint4-chatbot-glow`
+**Responsable:** @Sary Ariza Vargas
+**Sprint:** 4 | **Estimación:** 5 puntos | **Tipo:** Feature | **Prioridad:** Alta
+
+### Como usuaria
+Quiero consultar a un asistente inteligente sobre mi tipo de piel
+Para recibir recomendaciones personalizadas de productos del catálogo real de GlowLab
+
+### Criterios de Aceptación:
+- [ ] La interfaz muestra un botón flotante en la esquina inferior derecha que abre el panel del chatbot al hacer clic
+- [ ] `ChatbotService.java` consulta la base de datos, construye un system prompt con el catálogo completo (nombre, marca, precio, tipos de piel) y llama a la API de Groq con el modelo Llama 3.1
+- [ ] El chatbot solo recomienda productos existentes en la base de datos y no inventa información
+- [ ] Los precios se muestran en pesos colombianos dentro de la respuesta
+- [ ] Las credenciales de Groq se leen desde la variable de entorno `GROQ_API_KEY` y no están embebidas en el código fuente
+
+---
+
+## HU-16 | Monitoreo en Tiempo Real con Prometheus y Grafana
+**Rama:** `feature/sprint4-monitoring`
+**Responsable:** @Sary Ariza Vargas
+**Sprint:** 4 | **Estimación:** 5 puntos | **Tipo:** DevOps | **Prioridad:** Media
+
+### Como administradora del proyecto
+Quiero visualizar métricas de rendimiento del API en tiempo real
+Para detectar degradaciones de latencia, picos de tráfico y errores antes de que afecten a los usuarios
+
+### Criterios de Aceptación:
+- [ ] El `docker-compose.yml` levanta los contenedores de Prometheus (puerto 9091) y Grafana (puerto 3001) junto con la API
+- [ ] Spring Boot Actuator y Micrometer exponen el endpoint `/metrics` en formato Prometheus
+- [ ] El archivo `prometheus.yml` configura el scrape del target `api:8080` cada 15 segundos
+- [ ] El dashboard "GlowLab API - Monitoreo" se provisiona automáticamente en Grafana con tres paneles: Throughput (req/s), Latencia P95 y Tasa de Errores (4xx/5xx)
+- [ ] El script `scripts/generate_traffic.py` genera tráfico sintético para poblar las gráficas durante la demo
+
+---
