@@ -102,7 +102,7 @@ public class ChatbotService {
                 - Responde siempre en español, con tono cálido y cercano. Usa "tú".
                 - Recomienda EXCLUSIVAMENTE productos del catálogo anterior. Incluye nombre, marca y precio en COP.
                 - Sé concisa: máximo 4 párrafos o 5 puntos. No repitas información ya dada.
-                - Usa emojis ocasionalmente para un tono amigable ✨
+                - No uses emojis en tus respuestas.
                 - No incluyas [ASESOR_DISPONIBLE] si ya la pusiste antes en la conversación.
                 """.formatted(catalogo.toString());
     }

@@ -72,7 +72,7 @@ GlowLab es una plataforma web de skincare que permite explorar productos, genera
 | Secretos | Google Secret Manager | — |
 | Registro de imágenes | Google Artifact Registry | — |
 | Monitoreo | Prometheus + Grafana | 2.51 / 10.4 |
-| IA | Google Gemini 2.0 Flash | API REST |
+| IA | Groq (Llama 3.1 8B Instant) | API REST |
 
 ---
 
@@ -351,12 +351,14 @@ java -jar target/api-skincare-*.jar
 
 El chatbot está implementado como una nueva funcionalidad del Proyecto 3. Es visible en la app como un botón flotante en la esquina inferior derecha, disponible para usuarios logueados.
 
+**Nota:** El chatbot fue desarrollado inicialmente con Google Gemini 2.0 Flash. Durante las pruebas se identificó que las claves de Gemini tienen restricciones de cuota en el tier gratuito y problemas con el formato de autenticación en cuentas nuevas. Se migró a **Groq (Llama 3.1 8B Instant)** por ser más estable, completamente gratuito sin límite diario, y con una API compatible con el estándar OpenAI.
+
 ### Cómo funciona
 
 1. El usuario envía un mensaje desde el frontend
 2. El frontend manda `POST /api/chatbot` con el mensaje y el historial de la conversación
 3. El backend carga el catálogo actual de productos desde la base de datos
-4. Construye un system prompt con el catálogo y llama a la API de Gemini 2.0 Flash
+4. Construye un system prompt con el catálogo y llama a la API de Groq con el modelo Llama 3.1 8B
 5. Devuelve la respuesta al frontend
 
 El chatbot puede pedir el tipo de piel, preguntar por preocupaciones específicas y recomendar productos del catálogo con nombre, marca y precio. Si detecta que el usuario necesita una asesoría más personalizada, incluye un botón adicional en el chat.
@@ -365,7 +367,7 @@ El chatbot puede pedir el tipo de piel, preguntar por preocupaciones específica
 
 | Variable | Descripción | Cómo obtenerla |
 |---|---|---|
-| `GEMINI_API_KEY` | Clave para llamar a Gemini 2.0 Flash | https://aistudio.google.com/app/apikey |
+| `GEMINI_API_KEY` | Clave para llamar a Groq (Llama 3.1) | https://console.groq.com/keys |
 
 ### Endpoint
 
@@ -646,4 +648,4 @@ Durante el desarrollo se identificaron y resolvieron **10 bugs** documentados en
 | Cloud SQL | https://console.cloud.google.com/sql/instances/glowlab-db/overview?project=glowlab-api |
 | Secret Manager | https://console.cloud.google.com/security/secret-manager?project=glowlab-api |
 | Cloud Build — Historial | https://console.cloud.google.com/cloud-build/builds?project=glowlab-api |
-| Google AI Studio (Gemini API) | https://aistudio.google.com/app/apikey |
+| Groq Console (API Keys) | https://console.groq.com/keys |

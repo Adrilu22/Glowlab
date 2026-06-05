@@ -17,7 +17,7 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    private static final long EXPIRATION_MS = 15 * 60 * 1000L; // 15 minutos
+    private static final long EXPIRATION_MS = 8 * 60 * 60 * 1000L; // 8 horas
 
     @Value("${jwt.secret}")
     private String secret;
