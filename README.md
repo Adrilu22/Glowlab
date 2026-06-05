@@ -398,7 +398,7 @@ Lo que sí está disponible en producción es el endpoint `/metrics` del API:
 | Prometheus (solo local) | http://localhost:9091 |
 | Grafana (solo local) | http://localhost:3001 |
 
-Para la sustentación: correr `docker compose up` localmente, abrir Grafana en http://localhost:3001 con `admin` / `glowlab123`, y mostrar el dashboard "GlowLab API - Monitoreo" con tráfico generado por `python scripts/generate_traffic.py`.
+Para la sustentación: correr `docker compose up` localmente, abrir Grafana en http://localhost:3001 con `admin` / `glowlab123`, y mostrar el dashboard "API GlowLab - Monitoreo" con tráfico generado por `python scripts/generate_traffic.py`.
 
 ### Métricas expuestas en `/metrics`
 
@@ -407,14 +407,20 @@ La API expone métricas de Micrometer en formato Prometheus:
 - `http_server_requests_seconds_count` — contador de requests por endpoint y código de respuesta
 - `http_server_requests_seconds` — histograma de latencia (incluye P50, P95, P99)
 - `jvm_memory_used_bytes` — uso de memoria JVM (gauge)
+- `process_cpu_usage` — uso de CPU del proceso Spring Boot
 
 ### Dashboard de Grafana
 
-El archivo `monitoring/grafana/dashboards/glowlab.json` se provisiona automáticamente al levantar Grafana con Docker Compose. Contiene tres paneles:
+El archivo `monitoring/grafana/dashboards/glowlab.json` se provisiona automáticamente al levantar Grafana con Docker Compose. Contiene 8 paneles:
 
-- Throughput (requests/seg)
-- Latencia P95 por endpoint
-- Tasa de errores 4xx/5xx
+- Requests por segundo (throughput)
+- Latencia por endpoint (promedio)
+- Latencia P95 y P99 (percentiles)
+- Tasa de errores HTTP
+- Requests activos ahora
+- Total de requests por endpoint
+- Uso de CPU del proceso
+- Uso de memoria RAM (JVM)
 
 ---
 
