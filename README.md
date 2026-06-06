@@ -49,8 +49,8 @@ GlowLab es una plataforma web de skincare que permite explorar productos, genera
 
 ┌─────────────────────────────────────────────────────────────┐
 │         MONITOREO LOCAL (Proyecto 3)                        │
-│   Prometheus :9090  ←  scrape /metrics  ←  API :8080       │
-│   Grafana    :3000  ←  datasource       ←  Prometheus      │
+│   Prometheus :9091  ←  scrape /metrics  ←  API :8080       │
+│   Grafana    :3001  ←  datasource       ←  Prometheus      │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -187,9 +187,9 @@ GlowLab/
 │       │   │   ├── CompraController.java
 │       │   │   ├── UsuarioController.java
 │       │   │   ├── RutinaController.java
-│       │   │   └── ChatbotController.java  # NUEVO — Chatbot con Gemini
+│       │   │   └── ChatbotController.java  # Chatbot con Groq (Llama 3.1)
 │       │   └── service/
-│       │       └── ChatbotService.java     # NUEVO — Integración Gemini 2.0 Flash
+│       │       └── ChatbotService.java     # Integración Groq API (Llama 3.1 8B Instant)
 │       └── resources/
 │           ├── application.properties
 │           └── application.properties.example
@@ -227,19 +227,19 @@ Este comando levanta la API, la base de datos, Prometheus y Grafana en una sola 
 ### Requisitos previos
 
 - Docker Desktop 24+
-- Una API key de Gemini (para el chatbot): https://aistudio.google.com/app/apikey
+- Una API key de Groq (para el chatbot): https://console.groq.com/keys
 
-### Paso 1: Configurar la API key de Gemini
+### Paso 1: Configurar la API key de Groq
 
 ```bash
 # Linux / macOS
-export GEMINI_API_KEY=tu_clave_aqui
+export GEMINI_API_KEY=tu_clave_groq_aqui
 
 # Windows PowerShell
-$env:GEMINI_API_KEY="tu_clave_aqui"
+$env:GEMINI_API_KEY="tu_clave_groq_aqui"
 ```
 
-> Si no tienes una clave de Gemini, el chatbot muestra un mensaje de error pero el resto de la app funciona normalmente.
+> Obtén tu clave gratuita en https://console.groq.com/keys. Si no configuras la clave, el chatbot mostrará un mensaje de error pero el resto de la app funciona normalmente.
 
 ### Paso 2: Levantar el stack
 
@@ -250,7 +250,11 @@ docker-compose up --build
 Esto inicia cuatro servicios:
 - API + frontend: http://localhost:8080
 - Prometheus: http://localhost:9091
+<<<<<<< HEAD
 - Grafana: http://localhost:3000 (usuario: `admin`, contraseña: `glowlab123`)
+=======
+- Grafana: http://localhost:3001 (usuario: `admin`, contraseña: `glowlab123`)
+>>>>>>> 45647b0 (docs: corregir puertos Prometheus/Grafana y actualizar referencias Gemini→Groq)
 
 ### Paso 3: Verificar que todo funciona
 
@@ -262,7 +266,7 @@ curl http://localhost:8080/api/categorias
 curl http://localhost:8080/metrics | head -20
 
 # Prometheus scrapeando correctamente
-# Ir a http://localhost:9090/targets → el target glowlab-api debe estar UP
+# Ir a http://localhost:9091/targets → el target glowlab-api debe estar UP
 ```
 
 ### Paso 4: Ver el dashboard en Grafana
@@ -539,7 +543,7 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
 |---|---|---|---|
 | HU-13 | Monitoreo con Prometheus y Grafana | `feature/sprint4-monitoring` | Completada |
 | HU-14 | Análisis de seguridad (security.md) | `feature/sprint4-security` | Completada |
-| HU-15 | Chatbot Glow con Gemini 2.0 Flash | `feature/sprint4-chatbot` | Completada |
+| HU-15 | Chatbot Glow con Groq (Llama 3.1 8B) | `feature/sprint4-chatbot` | Completada |
 | HU-16 | Autenticación JWT en endpoints de escritura | `feature/sprint4-jwt-auth` | Pendiente |
 
 ---
@@ -649,7 +653,7 @@ Durante el desarrollo se identificaron y resolvieron **10 bugs** documentados en
 
 **`server.forward-headers-strategy=framework`.** Obligatorio en Spring Boot detrás de un proxy. Sin esto, los redirects generan URLs `http://` en lugar de `https://`.
 
-**Variables de entorno para secretos externos.** La API key de Gemini y el JWT secret nunca deben quedar en el código fuente. Siempre se pasan como variables de entorno (`GEMINI_API_KEY`, `JWT_SECRET`) y en producción se gestionan via Secret Manager.
+**Variables de entorno para secretos externos.** La API key de Groq (almacenada en `GEMINI_API_KEY` por compatibilidad) y el JWT secret nunca deben quedar en el código fuente. Siempre se pasan como variables de entorno y en producción se gestionan via Secret Manager.
 
 ---
 
