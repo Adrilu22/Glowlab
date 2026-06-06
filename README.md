@@ -250,11 +250,7 @@ docker-compose up --build
 Esto inicia cuatro servicios:
 - API + frontend: http://localhost:8080
 - Prometheus: http://localhost:9091
-<<<<<<< HEAD
-- Grafana: http://localhost:3000 (usuario: `admin`, contraseña: `glowlab123`)
-=======
 - Grafana: http://localhost:3001 (usuario: `admin`, contraseña: `glowlab123`)
->>>>>>> 45647b0 (docs: corregir puertos Prometheus/Grafana y actualizar referencias Gemini→Groq)
 
 ### Paso 3: Verificar que todo funciona
 
