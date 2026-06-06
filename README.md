@@ -249,7 +249,7 @@ docker-compose up --build
 
 Esto inicia cuatro servicios:
 - API + frontend: http://localhost:8080
-- Prometheus: http://localhost:9090
+- Prometheus: http://localhost:9091
 - Grafana: http://localhost:3000 (usuario: `admin`, contraseña: `glowlab123`)
 
 ### Paso 3: Verificar que todo funciona
@@ -267,7 +267,7 @@ curl http://localhost:8080/metrics | head -20
 
 ### Paso 4: Ver el dashboard en Grafana
 
-1. Abrir http://localhost:3000
+1. Abrir http://localhost:3001
 2. Login con `admin` / `glowlab123`
 3. Ir a Dashboards → "GlowLab API - Monitoreo"
 
